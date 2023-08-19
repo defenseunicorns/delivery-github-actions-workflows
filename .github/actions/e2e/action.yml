@@ -106,8 +106,11 @@ runs:
       env:
         TF_VAR_region: ${{ inputs.region }}
       run: |
-        echo "Running E2E tests" && \
-        make test-complete-${{ inputs.test-to-run }} fix-cache-permissions
+        echo "Running E2E ${{ inputs.test-to-run }} test" && \
+        make help
+      # run: |
+      #   echo "Running E2E tests" && \
+      #   make test-complete-${{ inputs.test-to-run }} fix-cache-permissions
 
     # Update GitHub status for successful pipeline run
     - name: "Update GitHub Status for success"

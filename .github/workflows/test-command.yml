@@ -5,11 +5,6 @@ name: test
 on:
   repository_dispatch:
     types: [test-command]
-  workflow_call:
-    secrets:
-      PAT:
-        description: "GitHub API token"
-        required: true
 
 permissions:
   id-token: write
