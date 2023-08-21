@@ -34,7 +34,7 @@ jobs:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           token: ${{ secrets.PAT }}
-          reactions: '+1'
+          reactions: 'hooray'
 
 
   # Parse the command, so we can decide which tests to run. Examples: "/test all", "/test validate", "/test e2e"
