@@ -23,6 +23,8 @@ runs:
   using: composite
   steps:
     # Update GitHub status for pending pipeline run
+    - uses: hmarr/debug-action@v2
+
     - name: "Update GitHub Status for pending"
       uses: docker://cloudposse/github-status-updater
       with:
@@ -45,7 +47,7 @@ runs:
           exit 1
           fi
 
-    - name: Checkout Repo
+    - name: Checkout Repo for chatOps
       uses: actions/checkout@v3
       with:
         token: ${{ secrets.PAT }}
