@@ -16,10 +16,14 @@ defaults:
     shell: bash -e -o pipefail {0}
 
 jobs:
-  build:
+  debug:
     runs-on: ubuntu-latest
     steps:
     - uses: hmarr/debug-action@v2
+    - name: Dump github.event.client_payload context
+      env:
+        PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
+      run: echo "$PAYLOAD_CONTEXT" | jq .
 
   # Parse the command, so we can decide which tests to run. Examples: "/test all", "/test validate", "/test e2e"
   # We can do as many of these as we want to get as granular as we want.
