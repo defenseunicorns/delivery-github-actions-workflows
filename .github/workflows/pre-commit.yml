@@ -14,7 +14,7 @@ name: |-
   
     jobs:
       pre-commit:
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/pre-commit-pr.yml@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/pre-commit.yml@main
         secrets:
           token: $\{\{ secrets.PAT \}\}
   ```
