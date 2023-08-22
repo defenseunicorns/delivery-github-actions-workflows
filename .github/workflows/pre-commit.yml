@@ -1,9 +1,33 @@
-name: pre-commit
+name: |-
+  pre-commit
+
+  ### Usage 
+  ```yaml
+    name: Terraform ChatOps
+    on:
+      workflow_call:
+    
+    permissions:
+      pull-requests: write
+      id-token: write
+      contents: read
+  
+    jobs:
+      pre-commit:
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/pre-commit.yml@main
+        secrets:
+          token: $\{\{ secrets.PAT \}\}
+  ```
 
 on:
-  pull_request:
+  workflow_call:
+    secrets:
+      token:
+        description: "GitHub API token"
+        required: true
 
 jobs:
+
   common:
     runs-on: ubuntu-latest
     steps:
@@ -14,6 +38,7 @@ jobs:
         uses: ./.github/actions/pre-commit
         with:
           check-type: common
+          token: ${{ secrets.PAT }}
 
   terraform:
     runs-on: ubuntu-latest
@@ -25,6 +50,7 @@ jobs:
         uses: ./.github/actions/pre-commit
         with:
           check-type: terraform
+          token: ${{ secrets.PAT }}
 
   golang:
     runs-on: ubuntu-latest
@@ -36,6 +62,7 @@ jobs:
         uses: ./.github/actions/pre-commit
         with:
           check-type: golang
+          token: ${{ secrets.PAT }}
 
   renovate:
     runs-on: ubuntu-latest
@@ -47,3 +74,4 @@ jobs:
         uses: ./.github/actions/pre-commit
         with:
           check-type: renovate
+          token: ${{ secrets.PAT }}
