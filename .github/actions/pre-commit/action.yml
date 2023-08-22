@@ -3,6 +3,9 @@
   description: Run pre-commit hooks
 
   inputs:
+    token:
+      description: Personal Access Token (PAT) used to update the comment
+      required: true
     check-type:
       description: The type of check to run. Valid values are "all", "common", "terraform", "golang", and "renovate"
       required: true
@@ -11,32 +14,40 @@
   runs:
     using: composite
     steps:
+
+      - name: Checkout Repo for chatOps
+        uses: actions/checkout@v3
+        with:
+          token: ${{ inputs.token }}
+          repository: ${{ github.event.client_payload.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.client_payload.pull_request.head.ref || github.ref_name }}
+
       - name: Init pre-commit cache
         uses: actions/cache@v3
         with:
           path: "${{ github.workspace }}/.cache/pre-commit"
-          key: "pre-commit-${{inputs.check-type}}|${{hashFiles('.tool-versions')}}|${{hashFiles('.pre-commit-config.yaml')}}"
+          key: "${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}|pre-commit-${{inputs.check-type}}|${{hashFiles('.tool-versions')}}|${{hashFiles('.pre-commit-config.yaml')}}"
 
       - name: Init gopath cache
         if: inputs.check-type == 'golang' || inputs.check-type == 'all'
         uses: actions/cache@v3
         with:
           path: "${{ github.workspace }}/.cache/go"
-          key: "gopath|${{hashFiles('.tool-versions')}}|${{hashFiles('go.sum')}}"
+          key: "${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}|gopath|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
 
       - name: Init gobuild cache
         if: inputs.check-type == 'golang' || inputs.check-type == 'all'
         uses: actions/cache@v3
         with:
           path: "${{ github.workspace }}/.cache/go-build"
-          key: "gobuild|${{hashFiles('.tool-versions')}}|${{hashFiles('go.sum')}}"
+          key: "${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}|gobuild|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
 
       - name: Init docker cache
         id: init-docker-cache
         uses: actions/cache@v3
         with:
           path: "${{ github.workspace }}/.cache/docker"
-          key: "docker|${{hashFiles('.env')}}"
+          key: "${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}|docker|${{ hashFiles('.env') }}"
 
       - name: Docker save build harness
         if: steps.init-docker-cache.outputs.cache-hit != 'true'
