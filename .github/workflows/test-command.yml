@@ -51,6 +51,9 @@ jobs:
           token: ${{ secrets.PAT }}
           repository: ${{ github.repository }}
           ref: "refs/heads/main"
+      - name: ls everything
+        shell: bash -e -o pipefail {0}
+        run: ls -lahRt .
       - name: Parse Args
         id: parse
         uses: ./.github/actions/parse-test
