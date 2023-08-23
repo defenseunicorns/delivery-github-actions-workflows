@@ -42,6 +42,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          repository: "defenseunicorns/delivery-github-actions-workflows"
+          ref: "refs/heads/main"
 
       - name: pre-commit
         uses: ./.github/actions/pre-commit
@@ -54,6 +57,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          repository: "defenseunicorns/delivery-github-actions-workflows"
+          ref: "refs/heads/main"
 
       - name: pre-commit
         uses: ./.github/actions/pre-commit
@@ -66,6 +72,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          repository: "defenseunicorns/delivery-github-actions-workflows"
+          ref: "refs/heads/main"
 
       - name: pre-commit
         uses: ./.github/actions/pre-commit
@@ -78,6 +87,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          repository: "defenseunicorns/delivery-github-actions-workflows"
+          ref: "refs/heads/main"
 
       - name: pre-commit
         uses: ./.github/actions/pre-commit
