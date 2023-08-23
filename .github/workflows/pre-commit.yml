@@ -43,6 +43,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
+          token: ${{ secrets.token }}
           repository: "defenseunicorns/delivery-github-actions-workflows"
           ref: "refs/heads/main"
 
@@ -50,7 +51,7 @@ jobs:
         uses: ./.github/actions/pre-commit
         with:
           check-type: common
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.token }}
 
   terraform:
     runs-on: ubuntu-latest
@@ -58,6 +59,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
+          token: ${{ secrets.token }}
           repository: "defenseunicorns/delivery-github-actions-workflows"
           ref: "refs/heads/main"
 
@@ -65,7 +67,7 @@ jobs:
         uses: ./.github/actions/pre-commit
         with:
           check-type: terraform
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.token }}
 
   golang:
     runs-on: ubuntu-latest
@@ -73,6 +75,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
+          token: ${{ secrets.token }}
           repository: "defenseunicorns/delivery-github-actions-workflows"
           ref: "refs/heads/main"
 
@@ -80,7 +83,7 @@ jobs:
         uses: ./.github/actions/pre-commit
         with:
           check-type: golang
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.token }}
 
   renovate:
     runs-on: ubuntu-latest
@@ -88,6 +91,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
+          token: ${{ secrets.token }}
           repository: "defenseunicorns/delivery-github-actions-workflows"
           ref: "refs/heads/main"
 
@@ -95,4 +99,4 @@ jobs:
         uses: ./.github/actions/pre-commit
         with:
           check-type: renovate
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.token }}
