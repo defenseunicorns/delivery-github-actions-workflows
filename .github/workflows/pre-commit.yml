@@ -28,6 +28,15 @@ on:
 
 jobs:
 
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: hmarr/debug-action@v2
+    - name: Dump github.event.client_payload context
+      env:
+        PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
+      run: echo "$PAYLOAD_CONTEXT" | jq .
+
   common:
     runs-on: ubuntu-latest
     steps:
