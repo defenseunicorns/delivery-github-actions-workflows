@@ -36,7 +36,6 @@ jobs:
           token: ${{ secrets.PAT }}
           reactions: 'hooray'
 
-
   # Parse the command, so we can decide which tests to run. Examples: "/test all", "/test validate", "/test e2e"
   # We can do as many of these as we want to get as granular as we want.
   parse:
