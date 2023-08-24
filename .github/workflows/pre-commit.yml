@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        check-type: ${{ inputs.check-types }}
+        check-type: ${{  fromJSON(inputs.check-types) }}
     steps:
       - name: pre-commit
         uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/pre-commit@main
