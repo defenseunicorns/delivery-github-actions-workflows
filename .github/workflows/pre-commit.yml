@@ -29,8 +29,7 @@ on:
         description: "List of check types to run"
         type: string
         required: false
-        # default: '["common", "terraform", "golang", "renovate"]'
-        default: common terraform golang renovate
+        default: '["common", "terraform", "golang", "renovate"]' #json matrix
 
 jobs:
 
