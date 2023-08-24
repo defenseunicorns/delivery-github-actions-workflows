@@ -37,22 +37,23 @@ jobs:
         PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
       run: echo "$PAYLOAD_CONTEXT" | jq .
 
+#testing full path to an action, probably won't work
   common:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.token }}
-          repository: "zack-is-cool/delivery-github-actions-workflows"
-          ref: "refs/heads/main"
+      # - name: Checkout repo
+      #   uses: actions/checkout@v3
+      #   with:
+      #     repository: "zack-is-cool/delivery-github-actions-workflows"
+      #     ref: "refs/heads/main"
 
       - name: pre-commit
-        uses: ./.github/actions/pre-commit
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
           check-type: common
-          token: ${{ secrets.token }}
+          # token: ${{ secrets.token }}
 
+# testing not checking out the repo inside
   terraform:
     runs-on: ubuntu-latest
     steps:
@@ -64,10 +65,10 @@ jobs:
           ref: "refs/heads/main"
 
       - name: pre-commit
-        uses: ./.github/actions/pre-commit
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
           check-type: terraform
-          token: ${{ secrets.token }}
+          # token: ${{ secrets.token }}
 
   golang:
     runs-on: ubuntu-latest
