@@ -12,6 +12,27 @@ on:
 
 jobs:
 
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: hmarr/debug-action@v2
+    - name: Dump github.event.client_payload context
+      env:
+        PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
+      run: echo "$PAYLOAD_CONTEXT" | jq .
+  ack:
+    runs-on: ubuntu-latest
+    if: github.event.client_payload.github.payload.comment.id != ''
+    steps:
+      - name: "Add reaction"
+        uses: cloudposse/actions/github/create-or-update-comment@0.33.0
+        with:
+          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          token: ${{ secrets.token }}
+          reactions: '+1'
+
+
   # Parse the command, so we can decide which tests to run. Examples: "/test all", "/test validate", "/test e2e"
   # We can do as many of these as we want to get as granular as we want.
   parse:
@@ -33,6 +54,9 @@ jobs:
       - name: Parse Args
         id: parse
         uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/parse-test@main
+      - name: ls everything
+        shell: bash -e -o pipefail {0}
+        run: ls -lahRt .
 
   # Update the comment that triggered the /test command to show the run url
   comment:
