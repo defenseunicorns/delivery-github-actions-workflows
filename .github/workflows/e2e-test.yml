@@ -13,7 +13,7 @@ on:
         description: "AWS IAM Role to assume"
         required: true
       AWS_GOVCLOUD_ROLE_TO_ASSUME:
-        description: "AWS IAM Role to assume"
+        description: "AWS Govcloud IAM Role to assume"
         required: true
 
 jobs:
