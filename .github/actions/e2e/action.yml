@@ -122,7 +122,7 @@ runs:
           }
       run: |
         echo "Running E2E  ${{ inputs.test-to-run }} test" && \
-        printenv | grep TF_VAR
+        echo "$TF_VAR_tags"
       # run: |
       #   echo "Running E2E  ${{ inputs.test-to-run }} test" && \
       #   make test-complete-${{ inputs.test-to-run }} fix-cache-permissions
