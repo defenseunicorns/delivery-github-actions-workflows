@@ -29,7 +29,8 @@ on:
         description: "List of check types to run"
         type: string
         required: false
-        default: "[common, terraform, golang, renovate]"
+        # default: '["common", "terraform", "golang", "renovate"]'
+        default: common terraform golang renovate
 
 jobs:
 
@@ -55,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        check-type: ${{ inputs.check-types }}
+        check-type: ${{ toJson(inputs.check-types) }}
     steps:
       - name: pre-commit
         uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/pre-commit@main
