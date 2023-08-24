@@ -32,16 +32,6 @@ on:
         default: '["common", "terraform", "golang", "renovate"]' #json matrix
 
 jobs:
-
-  debug:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: hmarr/debug-action@v2
-    - name: Dump github.event.client_payload context
-      env:
-        PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
-      run: echo "$PAYLOAD_CONTEXT" | jq .
-
   pre-commit-checks:
     runs-on: ubuntu-latest
     strategy:
