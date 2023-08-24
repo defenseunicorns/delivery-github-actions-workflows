@@ -1,41 +1,16 @@
 # Attribution for a bunch of this goes to CloudPosse
 # https://github.com/cloudposse/actions/blob/master/.github/workflows/test-command.yml
 
-name: test
+name: e2e-test
+
 on:
-  repository_dispatch:
-    types: [test-command]
-
-permissions:
-  id-token: write
-  contents: read
-
-defaults:
-  run:
-    # We need -e -o pipefail for consistency with GitHub Actions' default behavior
-    shell: bash -e -o pipefail {0}
+  workflow_call: 
+    secrets:
+      token:
+        description: "GitHub API token, used to checkout caller repo code"
+        required: true
 
 jobs:
-  debug:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: hmarr/debug-action@v2
-    - name: Dump github.event.client_payload context
-      env:
-        PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
-      run: echo "$PAYLOAD_CONTEXT" | jq .
-  ack:
-    runs-on: ubuntu-latest
-    if: github.event.client_payload.github.payload.comment.id != ''
-    steps:
-      - name: "Add reaction"
-        uses: cloudposse/actions/github/create-or-update-comment@0.33.0
-        with:
-          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
-          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
-          token: ${{ secrets.PAT }}
-          reactions: '+1'
-
 
   # Parse the command, so we can decide which tests to run. Examples: "/test all", "/test validate", "/test e2e"
   # We can do as many of these as we want to get as granular as we want.
@@ -46,33 +21,33 @@ jobs:
       run-e2e-commercial-insecure: ${{ steps.parse.outputs.run-e2e-commercial-insecure }}
       run-e2e-govcloud-secure: ${{ steps.parse.outputs.run-e2e-govcloud-secure }}
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.PAT }}
-          repository: ${{ github.repository }}
-          ref: "refs/heads/main"
+      # - name: Checkout Repo
+      #   uses: actions/checkout@v3
+      #   with:
+      #     token: ${{ secrets.token }}
+      #     repository: ${{ github.repository }}
+      #     ref: "refs/heads/main"
       - name: ls everything
         shell: bash -e -o pipefail {0}
         run: ls -lahRt .
       - name: Parse Args
         id: parse
-        uses: ./.github/actions/parse-test
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/parse-test@main
 
   # Update the comment that triggered the /test command to show the run url
   comment:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.PAT }}
-          repository: ${{ github.repository }}
-          ref: ${{ github.ref_name }}
+      # - name: Checkout Repo
+      #   uses: actions/checkout@v3
+      #   with:
+      #     token: ${{ secrets.token }}
+      #     repository: ${{ github.repository }}
+      #     ref: ${{ github.ref_name }}
       - name: Update Comment
-        uses: ./.github/actions/comment
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/comment@main
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.token }}
 
   # Do a simple ping/pong status update to validate things are working
   ping:
@@ -80,16 +55,16 @@ jobs:
     needs: parse
     if: needs.parse.outputs.run-ping == 'true'
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.PAT }}
-          repository: ${{ github.repository }}
-          ref: ${{ github.ref_name }}
+      # - name: Checkout Repo
+      #   uses: actions/checkout@v3
+      #   with:
+      #     token: ${{ secrets.token }}
+      #     repository: ${{ github.repository }}
+      #     ref: ${{ github.ref_name }}
       - name: Ping Test
-        uses: ./.github/actions/ping
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/ping@main
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.token }}
 
   # Run the E2E insecure tests on the commercial account
   e2e-commercial-insecure:
@@ -100,13 +75,13 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.token }}
           repository: ${{ github.repository }}
           ref: ${{ github.ref_name }}
       - name: Run E2E Tests
-        uses: ./.github/actions/e2e
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/e2e@main
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.token }}
           role-to-assume: ${{ secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }}
           region: us-east-2
           github-context: "test / e2e-commercial-insecure"
@@ -121,13 +96,13 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.token }}
           repository: ${{ github.repository }}
           ref: ${{ github.ref_name }}
       - name: Run E2E Tests
-        uses: ./.github/actions/e2e
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/e2e@main
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.token }}
           role-to-assume: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
           region: us-gov-east-1
           github-context: "test / e2e-govcloud-secure"
