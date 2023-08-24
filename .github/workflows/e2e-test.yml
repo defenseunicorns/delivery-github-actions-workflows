@@ -9,6 +9,12 @@ on:
       token:
         description: "GitHub API token, used to checkout caller repo code"
         required: true
+      AWS_COMMERCIAL_ROLE_TO_ASSUME:
+        description: "AWS IAM Role to assume"
+        required: true
+      AWS_GOVCLOUD_ROLE_TO_ASSUME:
+        description: "AWS IAM Role to assume"
+        required: true
 
 jobs:
 
