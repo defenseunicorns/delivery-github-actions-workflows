@@ -42,20 +42,11 @@ jobs:
         PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
       run: echo "$PAYLOAD_CONTEXT" | jq .
 
-  common:
-    runs-on: ubuntu-latest
-    steps:
-      - name: pre-commit
-        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/pre-commit@main
-        with:
-          check-type: common
-          token: ${{ secrets.token }}
-
   pre-commit-checks:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        check-type: ${{ toJson(inputs.check-types) }}
+        check-type: ${{ inputs.check-types }}
     steps:
       - name: pre-commit
         uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/pre-commit@main
