@@ -117,10 +117,7 @@ runs:
         TF_VAR_tags: '{"comment_trigger_url": "${{ github.event.client_payload.github.payload.comment.html_url }}","source_repo_url": "${{ github.event.client_payload.github.payload.repository.html_url }}","ci_runner_repo_url": "${{ github.event.repository.html_url }}"}'
       run: |
         echo "Running E2E  ${{ inputs.test-to-run }} test" && \
-        echo "$TF_VAR_tags"
-      # run: |
-      #   echo "Running E2E  ${{ inputs.test-to-run }} test" && \
-      #   make test-complete-${{ inputs.test-to-run }} fix-cache-permissions
+        make test-complete-${{ inputs.test-to-run }} fix-cache-permissions
 
     # Update GitHub status for successful pipeline run
     - name: "Update GitHub Status for success"
