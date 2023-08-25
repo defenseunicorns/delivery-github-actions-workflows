@@ -117,10 +117,7 @@ runs:
         TF_VAR_tags: '{"Pull Request": "${{ github.event.client_payload.github.payload.comment.issue_url }}","PR Comment ID": "${{ github.event.client_payload.github.payload.comment.id }}"}'
       run: |
         echo "Running E2E  ${{ inputs.test-to-run }} test" && \
-        make test-env-vars
-      # run: |
-      #   echo "Running E2E  ${{ inputs.test-to-run }} test" && \
-      #   make test-complete-${{ inputs.test-to-run }} fix-cache-permissions
+        make test-complete-${{ inputs.test-to-run }} fix-cache-permissions
 
     # Update GitHub status for successful pipeline run
     - name: "Update GitHub Status for success"
