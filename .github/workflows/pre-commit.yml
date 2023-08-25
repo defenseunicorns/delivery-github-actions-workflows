@@ -14,7 +14,7 @@ name: pre-commit
 
   # jobs:
   #   pre-commit:
-  #     uses: zack-is-cool/delivery-github-actions-workflows/.github/workflows/pre-commit.yml@main
+  #     uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/pre-commit.yml@main
   #     secrets:
   #       token: ${{ secrets.PAT}}
   #     with:
@@ -42,7 +42,7 @@ jobs:
         check-type: ${{ fromJSON(inputs.check-types) }}
     steps:
       - name: pre-commit
-        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/pre-commit@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
           check-type: ${{ matrix.check-type }}
           token: ${{ secrets.token }}
