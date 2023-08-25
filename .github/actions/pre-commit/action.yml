@@ -26,28 +26,28 @@
         uses: actions/cache@v3
         with:
           path: "${{ github.workspace }}/.cache/pre-commit"
-          key: "${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}|pre-commit-${{inputs.check-type}}|${{hashFiles('.tool-versions')}}|${{hashFiles('.pre-commit-config.yaml')}}"
+          key: "pre-commit-${{inputs.check-type}}|${{hashFiles('.tool-versions')}}|${{hashFiles('.pre-commit-config.yaml')}}"
 
       - name: Init gopath cache
         if: inputs.check-type == 'golang' || inputs.check-type == 'all'
         uses: actions/cache@v3
         with:
           path: "${{ github.workspace }}/.cache/go"
-          key: "${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}|gopath|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
+          key: "gopath|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
 
       - name: Init gobuild cache
         if: inputs.check-type == 'golang' || inputs.check-type == 'all'
         uses: actions/cache@v3
         with:
           path: "${{ github.workspace }}/.cache/go-build"
-          key: "${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}|gobuild|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
+          key: "gobuild|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
 
       - name: Init docker cache
         id: init-docker-cache
         uses: actions/cache@v3
         with:
           path: "${{ github.workspace }}/.cache/docker"
-          key: "${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}|docker|${{ hashFiles('.env') }}"
+          key: "docker|${{ hashFiles('.env') }}"
 
       - name: Docker save build harness
         if: steps.init-docker-cache.outputs.cache-hit != 'true'

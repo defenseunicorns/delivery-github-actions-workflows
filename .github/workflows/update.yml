@@ -1,0 +1,53 @@
+name: update
+
+on:
+  workflow_call: 
+    secrets:
+      token:
+        description: "GitHub API token, used to checkout caller repo code"
+        required: true
+
+jobs:
+
+  # Parse the command
+  parse:
+    runs-on: ubuntu-latest
+    outputs:
+      run-ping: ${{ steps.parse.outputs.run-ping }}
+      run-autoformat: ${{ steps.parse.outputs.run-autoformat }}
+    steps:
+      - name: Parse Args
+        id: parse
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/parse-update@main
+
+  # Update the comment that triggered the /update command to show the run url
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Comment
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/comment@main
+        with:
+          token: ${{ secrets.token }}
+
+  # Do a simple ping/pong status update to validate things are working
+  ping:
+    runs-on: ubuntu-latest
+    needs: parse
+    if: needs.parse.outputs.run-ping == 'true'
+    steps:
+      - name: Ping Test
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/ping@main
+        with:
+          token: ${{ secrets.token }}
+
+  # Update generated content
+  autoformat:
+    runs-on: ubuntu-latest
+    needs: parse
+    if: needs.parse.outputs.run-autoformat == 'true'
+    steps:
+      - name: Autoformat
+        uses: zack-is-cool/delivery-github-actions-workflows/.github/actions/autoformat@main
+        with:
+          token: ${{ secrets.token }}
+          github-context: "update / autoformat"
