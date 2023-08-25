@@ -1,0 +1,81 @@
+# Attribution for a bunch of this goes to CloudPosse
+# https://github.com/cloudposse/actions/blob/master/.github/workflows/test-command.yml
+name: e2e-test
+
+on:
+  workflow_call: 
+    secrets:
+      token:
+        description: "GitHub API token, used to checkout caller repo code"
+        required: true
+      AWS_COMMERCIAL_ROLE_TO_ASSUME:
+        description: "AWS IAM Role to assume"
+        required: true
+      AWS_GOVCLOUD_ROLE_TO_ASSUME:
+        description: "AWS Govcloud IAM Role to assume"
+        required: true
+
+jobs:
+
+  # Parse the command, so we can decide which tests to run. Examples: "/test all", "/test validate", "/test e2e"
+  # We can do as many of these as we want to get as granular as we want.
+  parse:
+    runs-on: ubuntu-latest
+    outputs:
+      run-ping: ${{ steps.parse.outputs.run-ping }}
+      run-e2e-commercial-insecure: ${{ steps.parse.outputs.run-e2e-commercial-insecure }}
+      run-e2e-govcloud-secure: ${{ steps.parse.outputs.run-e2e-govcloud-secure }}
+    steps:
+      - name: Parse Args
+        id: parse
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/parse-test@main
+
+  # Update the comment that triggered the /test command to show the run url
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Comment
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
+        with:
+          token: ${{ secrets.token }}
+
+  # Do a simple ping/pong status update to validate things are working
+  ping:
+    runs-on: ubuntu-latest
+    needs: parse
+    if: needs.parse.outputs.run-ping == 'true'
+    steps:
+      - name: Ping Test
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@main
+        with:
+          token: ${{ secrets.token }}
+
+  # Run the E2E insecure tests on the commercial account
+  e2e-commercial-insecure:
+    runs-on: ubuntu-latest
+    needs: parse
+    if: needs.parse.outputs.run-e2e-commercial-insecure == 'true'
+    steps:
+      - name: Run E2E Tests
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
+        with:
+          token: ${{ secrets.token }}
+          role-to-assume: ${{ secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }}
+          region: us-east-2
+          github-context: "test / e2e-commercial-insecure"
+          test-to-run: "insecure"
+
+  # Run the E2E secure tests on the govcloud account
+  e2e-govcloud-secure:
+    runs-on: ubuntu-latest
+    needs: parse
+    if: needs.parse.outputs.run-e2e-govcloud-secure == 'true'
+    steps:
+      - name: Run E2E Tests
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
+        with:
+          token: ${{ secrets.token }}
+          role-to-assume: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
+          region: us-gov-east-1
+          github-context: "test / e2e-govcloud-secure"
+          test-to-run: "secure"

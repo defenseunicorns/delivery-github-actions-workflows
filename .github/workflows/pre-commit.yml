@@ -1,102 +1,48 @@
-name: |-
-  pre-commit
+name: pre-commit
 
   ### Usage 
-  ```yaml
-    name: Terraform ChatOps
-    on:
-      workflow_call:
-    
-    permissions:
-      pull-requests: write
-      id-token: write
-      contents: read
-  
-    jobs:
-      pre-commit:
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/pre-commit.yml@main
-        secrets:
-          token: $\{\{ secrets.PAT \}\}
-  ```
+  # ```yaml
+  # name: pre-commit
+
+  # on:
+  #   pull_request:
+
+  # permissions:
+  #   pull-requests: write
+  #   id-token: write
+  #   contents: read
+
+  # jobs:
+  #   pre-commit:
+  #     uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/pre-commit.yml@main
+  #     secrets:
+  #       token: ${{ secrets.PAT}}
+  #     with:
+  #       check-types: '["common", "terraform", "golang"]'
+  # ```
 
 on:
   workflow_call:
     secrets:
       token:
-        description: "GitHub API token"
-        required: true
+        description: "GitHub API token, used to checkout caller repo code"
+        required: false
+    inputs:
+      check-types:
+        description: "List of check types to run"
+        type: string
+        required: false
+        default: '["common", "terraform", "golang", "renovate"]' #json matrix
 
 jobs:
-
-  debug:
+  pre-commit-checks:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        check-type: ${{ fromJSON(inputs.check-types) }}
     steps:
-    - uses: hmarr/debug-action@v2
-    - name: Dump github.event.client_payload context
-      env:
-        PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
-      run: echo "$PAYLOAD_CONTEXT" | jq .
-
-  common:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.token }}
-          repository: "defenseunicorns/delivery-github-actions-workflows"
-          ref: "refs/heads/main"
-
       - name: pre-commit
-        uses: ./.github/actions/pre-commit
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
-          check-type: common
-          token: ${{ secrets.token }}
-
-  terraform:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.token }}
-          repository: "defenseunicorns/delivery-github-actions-workflows"
-          ref: "refs/heads/main"
-
-      - name: pre-commit
-        uses: ./.github/actions/pre-commit
-        with:
-          check-type: terraform
-          token: ${{ secrets.token }}
-
-  golang:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.token }}
-          repository: "defenseunicorns/delivery-github-actions-workflows"
-          ref: "refs/heads/main"
-
-      - name: pre-commit
-        uses: ./.github/actions/pre-commit
-        with:
-          check-type: golang
-          token: ${{ secrets.token }}
-
-  renovate:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.token }}
-          repository: "defenseunicorns/delivery-github-actions-workflows"
-          ref: "refs/heads/main"
-
-      - name: pre-commit
-        uses: ./.github/actions/pre-commit
-        with:
-          check-type: renovate
+          check-type: ${{ matrix.check-type }}
           token: ${{ secrets.token }}
