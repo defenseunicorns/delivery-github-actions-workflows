@@ -115,10 +115,11 @@ runs:
       env:
         TF_VAR_region: ${{ inputs.region }}
         TF_VAR_tags: >-
-          '{
+          {
             "Pull Request": "${{ github.event.client_payload.github.payload.comment.issue_url }}",
             "PR Comment ID": "${{ github.event.client_payload.github.payload.comment.id }}"
-          }'
+          }
+
         run: |
           echo "Running E2E  ${{ inputs.test-to-run }} test" && \
           make test-env-vars
