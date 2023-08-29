@@ -1,6 +1,6 @@
 name: pre-commit
 
-  ### Usage 
+  ### Usage
   # ```yaml
   # name: pre-commit
 
@@ -23,10 +23,10 @@ name: pre-commit
 
 on:
   workflow_call:
-    secrets:
-      token:
-        description: "GitHub API token, used to checkout caller repo code"
-        required: false
+    # secrets:
+    #   token:
+    #     description: "GitHub API token, used to checkout caller repo code"
+    #     required: false
     inputs:
       check-types:
         description: "List of check types to run"
@@ -45,4 +45,4 @@ jobs:
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
           check-type: ${{ matrix.check-type }}
-          token: ${{ secrets.token }}
+          # token: ${{ secrets.token }}
