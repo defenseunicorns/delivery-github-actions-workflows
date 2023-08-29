@@ -27,6 +27,14 @@ on:
     #   token:
     #     description: "GitHub API token, used to checkout caller repo code"
     #     required: false
+    secrets:
+      APPLICATION_ID:
+        description: "GitHub App ID"
+        required: true
+      APPLICATION_PRIVATE_KEY:
+        description: "GitHub App private key"
+        required: true
+
     inputs:
       check-types:
         description: "List of check types to run"
@@ -45,4 +53,5 @@ jobs:
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
           check-type: ${{ matrix.check-type }}
-          # token: ${{ secrets.token }}
+          APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
+          APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
