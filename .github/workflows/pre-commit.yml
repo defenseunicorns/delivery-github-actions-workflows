@@ -23,10 +23,6 @@ name: pre-commit
 
 on:
   workflow_call:
-    # secrets:
-    #   token:
-    #     description: "GitHub API token, used to checkout caller repo code"
-    #     required: false
     secrets:
       APPLICATION_ID:
         description: "GitHub App ID"
