@@ -1,0 +1,24 @@
+name: get-workflow-token
+
+on:
+  workflow_call:
+    secrets:
+      APPLICATION_ID:
+        description: "GitHub App ID"
+        required: true
+      APPLICATION_PRIVATE_KEY:
+        description: "GitHub App Private Key"
+        required: true
+
+jobs:
+  get-workflow-token:
+    runs-on: ubuntu-latest
+    outputs:
+      token: ${{ steps.get-workflow-token.outputs.token }}
+    steps:
+    - name: Get Token
+      id: get-workflow-token
+      uses: peter-murray/workflow-application-token-action@v1
+      with:
+        application_id: ${{ secrets.APPLICATION_ID }}
+        application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
