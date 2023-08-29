@@ -2,6 +2,10 @@ name: get-workflow-token
 
 on:
   workflow_call:
+    outputs:
+      token:
+        description: "GitHub App Token"
+        value: ${{ jobs.get-workflow-token.outputs.token }}
     secrets:
       APPLICATION_ID:
         description: "GitHub App ID"
