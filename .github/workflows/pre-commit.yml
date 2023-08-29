@@ -50,7 +50,7 @@ jobs:
         check-type: ${{ fromJSON(inputs.check-types) }}
     steps:
       - name: pre-commit
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@ci/app_token_wip
         with:
           check-type: ${{ matrix.check-type }}
           APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
