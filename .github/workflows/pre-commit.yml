@@ -1,26 +1,5 @@
 name: pre-commit
 
-  ### Usage
-  # ```yaml
-  # name: pre-commit
-
-  # on:
-  #   pull_request:
-
-  # permissions:
-  #   pull-requests: write
-  #   id-token: write
-  #   contents: read
-
-  # jobs:
-  #   pre-commit:
-  #     uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/pre-commit.yml@main
-  #     secrets:
-  #       token: ${{ secrets.PAT}}
-  #     with:
-  #       check-types: '["common", "terraform", "golang"]'
-  # ```
-
 on:
   workflow_call:
     secrets:
@@ -46,7 +25,7 @@ jobs:
         check-type: ${{ fromJSON(inputs.check-types) }}
     steps:
       - name: pre-commit
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@ci/app_token_wip
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
           check-type: ${{ matrix.check-type }}
           APPLICATION_ID: ${{ secrets.APPLICATION_ID }}

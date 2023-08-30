@@ -1,7 +1,7 @@
 name: update
 
 on:
-  workflow_call: 
+  workflow_call:
     secrets:
       token:
         description: "GitHub API token, used to checkout caller repo code"
@@ -27,7 +27,8 @@ jobs:
       - name: Update Comment
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
         with:
-          token: ${{ secrets.token }}
+          APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
+          APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
 
   # Do a simple ping/pong status update to validate things are working
   ping:
@@ -38,7 +39,8 @@ jobs:
       - name: Ping Test
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@main
         with:
-          token: ${{ secrets.token }}
+          APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
+          APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
 
   # Update generated content
   autoformat:
@@ -49,5 +51,6 @@ jobs:
       - name: Autoformat
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@main
         with:
-          token: ${{ secrets.token }}
+          APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
+          APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           github-context: "update / autoformat"
