@@ -31,8 +31,7 @@ jobs:
       - name: Autoformat
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@main
         with:
-          APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
-          APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
           github-context: "update / autoformat"
 
       - name: Wait 5 seconds

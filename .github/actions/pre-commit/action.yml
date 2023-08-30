@@ -3,11 +3,8 @@
   description: Run pre-commit hooks
 
   inputs:
-    APPLICATION_ID:
-      description: The GitHub App ID
-      required: true
-    APPLICATION_PRIVATE_KEY:
-      description: The GitHub App Private Key
+    token:
+      description: 'The GitHub token to use for authentication'
       required: true
     check-type:
       description: The type of check to run. Valid values are "all", "common", "terraform", "golang", and "renovate"
@@ -28,7 +25,7 @@
       - name: Checkout caller repo for processing this action
         uses: actions/checkout@v3
         with:
-          token: ${{ steps.get_workflow_token.outputs.token }}
+          token: ${{ inputs.token }}
           repository: ${{ github.event.client_payload.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.client_payload.pull_request.head.ref || github.ref }}
 
