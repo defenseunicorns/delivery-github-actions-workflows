@@ -15,13 +15,6 @@
     using: composite
     steps:
 
-      - name: Get token
-        id: get_workflow_token
-        uses: peter-murray/workflow-application-token-action@v2
-        with:
-          application_id: ${{ inputs.APPLICATION_ID }}
-          application_private_key: ${{ inputs.APPLICATION_PRIVATE_KEY }}
-
       - name: Checkout caller repo for processing this action
         uses: actions/checkout@v3
         with:
