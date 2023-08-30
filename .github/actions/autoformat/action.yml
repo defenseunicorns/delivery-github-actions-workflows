@@ -4,7 +4,7 @@ description: Autoformat code using pre-commit
 
 inputs:
   token:
-    description: Personal Access Token (PAT)
+    description: 'The GitHub token to use for authentication'
     required: true
   github-context:
     description: The GitHub Status Context to use when updating the status
@@ -13,6 +13,13 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Get token
+      id: get_workflow_token
+      uses: peter-murray/workflow-application-token-action@v2
+      with:
+        application_id: ${{ inputs.APPLICATION_ID }}
+        application_private_key: ${{ inputs.APPLICATION_PRIVATE_KEY }}
+
     # Update GitHub status for pending pipeline run
     - name: "Update GitHub Status for pending"
       uses: docker://cloudposse/github-status-updater

@@ -3,10 +3,13 @@
 name: e2e-test
 
 on:
-  workflow_call: 
+  workflow_call:
     secrets:
-      token:
-        description: "GitHub API token, used to checkout caller repo code"
+      APPLICATION_ID:
+        description: The GitHub App ID
+        required: true
+      APPLICATION_PRIVATE_KEY:
+        description: The GitHub App Private Key
         required: true
       AWS_COMMERCIAL_ROLE_TO_ASSUME:
         description: "AWS IAM Role to assume"
@@ -34,10 +37,18 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
+
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v2
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+
       - name: Update Comment
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
         with:
-          token: ${{ secrets.token }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
 
   # Do a simple ping/pong status update to validate things are working
   ping:
@@ -45,10 +56,18 @@ jobs:
     needs: parse
     if: needs.parse.outputs.run-ping == 'true'
     steps:
+
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v2
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+
       - name: Ping Test
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@main
         with:
-          token: ${{ secrets.token }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
 
   # Run the E2E insecure tests on the commercial account
   e2e-commercial-insecure:
@@ -56,10 +75,18 @@ jobs:
     needs: parse
     if: needs.parse.outputs.run-e2e-commercial-insecure == 'true'
     steps:
+
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v2
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+
       - name: Run E2E Tests
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
         with:
-          token: ${{ secrets.token }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
           role-to-assume: ${{ secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }}
           region: us-east-2
           github-context: "test / e2e-commercial-insecure"
@@ -71,10 +98,18 @@ jobs:
     needs: parse
     if: needs.parse.outputs.run-e2e-govcloud-secure == 'true'
     steps:
+
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v2
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+
       - name: Run E2E Tests
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
         with:
-          token: ${{ secrets.token }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
           role-to-assume: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
           region: us-gov-east-1
           github-context: "test / e2e-govcloud-secure"

@@ -1,5 +1,5 @@
 # This autoformats using pre-commit, then triggers an automatic test run if and only if Renovate is the author and the PR was just opened. See ADR #0008.
-name: auto-test
+name: renovate-test
 on:
   pull_request:
     # WARNING: DO NOT ADD MORE EVENT TYPES HERE! Because this workflow will push a new commit to the PR in the Autoformat step, adding more event types may cause an infinite loop.
@@ -16,21 +16,22 @@ defaults:
     shell: bash -e -o pipefail {0}
 
 jobs:
-  auto-test:
+  renovate-test:
     if: github.event.client_payload.github.actor == 'renovate[bot]' || github.actor == 'renovate[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
+
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v2
         with:
-          token: ${{ secrets.PAT }}
-          repository: ${{ github.repository }}
-          ref: ${{ github.event.pull_request.head.ref }}
+          application_id: ${{ secrets.NARWHAL_BOT_APP_ID }}
+          application_private_key: ${{ secrets.NARWHAL_BOT_SECRET }}
 
       - name: Autoformat
-        uses: ./.github/actions/autoformat
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@main
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
           github-context: "update / autoformat"
 
       - name: Wait 5 seconds
@@ -39,7 +40,7 @@ jobs:
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v3
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
           repository: ${{ github.repository }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |

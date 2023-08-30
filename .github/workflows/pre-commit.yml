@@ -1,32 +1,15 @@
 name: pre-commit
 
-  ### Usage 
-  # ```yaml
-  # name: pre-commit
-
-  # on:
-  #   pull_request:
-
-  # permissions:
-  #   pull-requests: write
-  #   id-token: write
-  #   contents: read
-
-  # jobs:
-  #   pre-commit:
-  #     uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/pre-commit.yml@main
-  #     secrets:
-  #       token: ${{ secrets.PAT}}
-  #     with:
-  #       check-types: '["common", "terraform", "golang"]'
-  # ```
-
 on:
   workflow_call:
     secrets:
-      token:
-        description: "GitHub API token, used to checkout caller repo code"
-        required: false
+      APPLICATION_ID:
+        description: "GitHub App ID"
+        required: true
+      APPLICATION_PRIVATE_KEY:
+        description: "GitHub App private key"
+        required: true
+
     inputs:
       check-types:
         description: "List of check types to run"
@@ -41,8 +24,16 @@ jobs:
       matrix:
         check-type: ${{ fromJSON(inputs.check-types) }}
     steps:
+
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v2
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+
       - name: pre-commit
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
           check-type: ${{ matrix.check-type }}
-          token: ${{ secrets.token }}
+          token: ${{ steps.get_workflow_token.outputs.token }}

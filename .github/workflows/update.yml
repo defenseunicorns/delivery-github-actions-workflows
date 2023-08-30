@@ -1,12 +1,14 @@
 name: update
 
 on:
-  workflow_call: 
+  workflow_call:
     secrets:
-      token:
-        description: "GitHub API token, used to checkout caller repo code"
+      APPLICATION_ID:
+        description: The GitHub App ID
         required: true
-
+      APPLICATION_PRIVATE_KEY:
+        description: The GitHub App Private Key
+        required: true
 jobs:
 
   # Parse the command
@@ -20,14 +22,22 @@ jobs:
         id: parse
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/parse-update@main
 
-  # Update the comment that triggered the /update command to show the run url
+  # Update the comment that triggered the /test command to show the run url
   comment:
     runs-on: ubuntu-latest
     steps:
+
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v2
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+
       - name: Update Comment
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
         with:
-          token: ${{ secrets.token }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
 
   # Do a simple ping/pong status update to validate things are working
   ping:
@@ -35,10 +45,18 @@ jobs:
     needs: parse
     if: needs.parse.outputs.run-ping == 'true'
     steps:
+
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v2
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+
       - name: Ping Test
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@main
         with:
-          token: ${{ secrets.token }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
 
   # Update generated content
   autoformat:
@@ -46,8 +64,16 @@ jobs:
     needs: parse
     if: needs.parse.outputs.run-autoformat == 'true'
     steps:
+
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v2
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+
       - name: Autoformat
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@main
         with:
-          token: ${{ secrets.token }}
+          token: ${{ steps.get_workflow_token.outputs.token }}
           github-context: "update / autoformat"

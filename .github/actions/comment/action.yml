@@ -4,12 +4,13 @@ description: Update Slash Command Dispatch comment with the run URL
 
 inputs:
   token:
-    description: Personal Access Token (PAT) used to update the comment
+    description: 'The GitHub token to use for authentication'
     required: true
 
 runs:
   using: composite
   steps:
+
     - name: Create URL to the run output
       id: vars
       shell: bash -e -o pipefail {0}
