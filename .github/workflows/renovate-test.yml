@@ -12,6 +12,12 @@ on:
       APPLICATION_PRIVATE_KEY:
         description: "The GitHub App Private Key"
         required: false
+      AWS_COMMERCIAL_ROLE_TO_ASSUME:
+        description: "AWS IAM Role to assume"
+        required: true
+      AWS_GOVCLOUD_ROLE_TO_ASSUME:
+        description: "AWS Govcloud IAM Role to assume"
+        required: true
 
 permissions:
   id-token: write
