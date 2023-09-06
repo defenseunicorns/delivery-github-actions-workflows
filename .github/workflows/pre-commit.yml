@@ -3,12 +3,15 @@ name: pre-commit
 on:
   workflow_call:
     secrets:
+      TOKEN:
+        description: "GitHub App Token"
+        required: false
       APPLICATION_ID:
-        description: "GitHub App ID"
-        required: true
+        description: "The GitHub App ID"
+        required: false
       APPLICATION_PRIVATE_KEY:
-        description: "GitHub App private key"
-        required: true
+        description: "The GitHub App Private Key"
+        required: false
 
     inputs:
       check-types:
@@ -25,15 +28,10 @@ jobs:
         check-type: ${{ fromJSON(inputs.check-types) }}
     steps:
 
-      - name: Get token
-        id: get_workflow_token
-        uses: peter-murray/workflow-application-token-action@v2
-        with:
-          application_id: ${{ secrets.APPLICATION_ID }}
-          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-
       - name: pre-commit
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@ci/refactor_for_github_app_token_expiration
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
           check-type: ${{ matrix.check-type }}
-          token: ${{ steps.get_workflow_token.outputs.token }}
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}

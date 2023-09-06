@@ -19,11 +19,12 @@ jobs:
       - name: Get token
         id: get_workflow_token
         uses: peter-murray/workflow-application-token-action@v2
+        if: ${{ !secrets.TOKEN }}}
         with:
           application_id: ${{ secrets.NARWHAL_BOT_APP_ID }}
           application_private_key: ${{ secrets.NARWHAL_BOT_SECRET }}
 
       - uses: google-github-actions/release-please-action@v3
         with:
-          token: ${{ steps.get_workflow_token.outputs.token }}
+          token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
           command: manifest

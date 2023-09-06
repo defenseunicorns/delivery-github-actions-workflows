@@ -3,12 +3,16 @@ name: Update Slash Command Dispatch Comment
 description: Update Slash Command Dispatch comment with the run URL
 
 inputs:
+  # either pass in a token, or an app id and private key
+  token:
+    description: 'The GitHub token to use for authentication'
+    required: false
   application_id:
     description: 'The GitHub App ID'
-    required: true
+    required: false
   application_private_key:
     description: 'The GitHub App private key'
-    required: true
+    required: false
 
 runs:
   using: composite
@@ -17,6 +21,7 @@ runs:
     - name: Get token
       id: get_installation_token
       uses: peter-murray/workflow-application-token-action@v2
+      if: ${{ !inputs.token }}
       with:
         application_id: ${{ inputs.application_id }}
         application_private_key: ${{ inputs.application_private_key }}
@@ -31,7 +36,7 @@ runs:
       if: github.event_name == 'repository_dispatch'
       uses: peter-evans/create-or-update-comment@v3
       with:
-        token: ${{ steps.get_installation_token.outputs.token }}
+        token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
         repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
         comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
         body: |

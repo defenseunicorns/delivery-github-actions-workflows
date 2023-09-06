@@ -24,14 +24,15 @@ jobs:
       - name: Get token
         id: get_workflow_token
         uses: peter-murray/workflow-application-token-action@v2
+        if: ${{ !secrets.TOKEN }}}
         with:
           application_id: ${{ secrets.NARWHAL_BOT_APP_ID }}
           application_private_key: ${{ secrets.NARWHAL_BOT_SECRET }}
 
       - name: Autoformat
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@ci/refactor_for_github_app_token_expiration
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@main
         with:
-          token: ${{ steps.get_workflow_token.outputs.token }}
+          token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
           github-context: "update / autoformat"
 
       - name: Wait 5 seconds
@@ -40,7 +41,7 @@ jobs:
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v3
         with:
-          token: ${{ steps.get_workflow_token.outputs.token }}
+          token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
           repository: ${{ github.repository }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
