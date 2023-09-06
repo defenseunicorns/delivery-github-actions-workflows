@@ -1,17 +1,10 @@
 # This autoformats using pre-commit, then triggers an automatic test run if and only if Renovate is the author and the PR was just opened. See ADR #0008.
 name: renovate-test
 on:
-  workflow_call:
-    secrets:
-      TOKEN:
-        description: "GitHub App Token"
-        required: false
-      APPLICATION_ID:
-        description: "The GitHub App ID"
-        required: false
-      APPLICATION_PRIVATE_KEY:
-        description: "The GitHub App Private Key"
-        required: false
+  pull_request:
+    # WARNING: DO NOT ADD MORE EVENT TYPES HERE! Because this workflow will push a new commit to the PR in the Autoformat step, adding more event types may cause an infinite loop.
+    types:
+      - opened
 
 permissions:
   id-token: write
@@ -33,8 +26,8 @@ jobs:
         uses: peter-murray/workflow-application-token-action@v2
         if: ${{ !env.TOKEN }}
         with:
-          application_id: ${{ secrets.APPLICATION_ID }}
-          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          application_id: ${{ secrets.NARWHAL_BOT_APP_ID }}
+          application_private_key: ${{ secrets.NARWHAL_BOT_SECRET }}
         env:
           TOKEN: ${{ secrets.TOKEN }}
 
