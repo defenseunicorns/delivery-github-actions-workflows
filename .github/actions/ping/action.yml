@@ -3,13 +3,29 @@ name: Ping test
 description: Simple test that validates that an action can update a workflow status.
 
 inputs:
+  # either pass in a token, or an app id and private key
   token:
     description: 'The GitHub token to use for authentication'
-    required: true
+    required: false
+  application_id:
+    description: 'The GitHub App ID'
+    required: false
+  application_private_key:
+    description: 'The GitHub App private key'
+    required: false
+
 
 runs:
   using: composite
   steps:
+
+    - name: Get token
+      id: get_installation_token
+      uses: peter-murray/workflow-application-token-action@v2
+      if: ${{ !inputs.token }}
+      with:
+        application_id: ${{ inputs.application_id }}
+        application_private_key: ${{ inputs.application_private_key }}
 
     # Update GitHub status for dispatch events
     - name: "Update GitHub Status for this ref"
@@ -18,7 +34,7 @@ runs:
       with:
         args: "-action update_state -state success -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
       env:
-        GITHUB_TOKEN: ${{ inputs.token }}
+        GITHUB_TOKEN: ${{ inputs.token || steps.get_installation_token.outputs.token }}
         GITHUB_CONTEXT: "ping"
         GITHUB_DESCRIPTION: "pong"
         GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
