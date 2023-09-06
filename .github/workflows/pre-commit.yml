@@ -33,7 +33,7 @@ jobs:
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
 
       - name: pre-commit
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@ci/refactor_for_github_app_token_expiration
         with:
           check-type: ${{ matrix.check-type }}
           token: ${{ steps.get_workflow_token.outputs.token }}

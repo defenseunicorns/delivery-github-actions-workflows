@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Parse Args
         id: parse
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/parse-test@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/parse-test@ci/refactor_for_github_app_token_expiration
 
   # Update the comment that triggered the /test command to show the run url
   comment:
@@ -42,7 +42,7 @@ jobs:
     steps:
 
       - name: Update Comment
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@ci/refactor_for_github_app_token_expiration
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
@@ -56,7 +56,7 @@ jobs:
     steps:
 
       - name: Ping Test
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@ci/refactor_for_github_app_token_expiration
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
@@ -70,7 +70,7 @@ jobs:
     steps:
 
       - name: Run E2E Tests
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@ci/refactor_for_github_app_token_expiration
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
@@ -88,7 +88,7 @@ jobs:
     steps:
 
       - name: Run E2E Tests
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@ci/refactor_for_github_app_token_expiration
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}

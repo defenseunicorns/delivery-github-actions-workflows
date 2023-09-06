@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Parse Args
         id: parse
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/parse-update@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/parse-update@ci/refactor_for_github_app_token_expiration
 
   # Update the comment that triggered the /test command to show the run url
   comment:
@@ -35,7 +35,7 @@ jobs:
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
 
       - name: Update Comment
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@ci/refactor_for_github_app_token_expiration
         with:
           token: ${{ steps.get_workflow_token.outputs.token }}
 
@@ -54,7 +54,7 @@ jobs:
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
 
       - name: Ping Test
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@ci/refactor_for_github_app_token_expiration
         with:
           token: ${{ steps.get_workflow_token.outputs.token }}
 
@@ -73,7 +73,7 @@ jobs:
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
 
       - name: Autoformat
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@ci/refactor_for_github_app_token_expiration
         with:
           token: ${{ steps.get_workflow_token.outputs.token }}
           github-context: "update / autoformat"
