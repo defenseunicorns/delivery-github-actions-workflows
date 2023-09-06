@@ -3,12 +3,15 @@ name: update
 on:
   workflow_call:
     secrets:
+      TOKEN:
+        description: "GitHub App Token"
+        required: false
       APPLICATION_ID:
-        description: The GitHub App ID
-        required: true
+        description: "The GitHub App ID"
+        required: false
       APPLICATION_PRIVATE_KEY:
-        description: The GitHub App Private Key
-        required: true
+        description: "The GitHub App Private Key"
+        required: false
 jobs:
 
   # Parse the command
@@ -27,17 +30,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: Get token
-        id: get_workflow_token
-        uses: peter-murray/workflow-application-token-action@v2
-        with:
-          application_id: ${{ secrets.APPLICATION_ID }}
-          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-
       - name: Update Comment
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
         with:
-          token: ${{ steps.get_workflow_token.outputs.token }}
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
+
 
   # Do a simple ping/pong status update to validate things are working
   ping:
@@ -46,17 +45,13 @@ jobs:
     if: needs.parse.outputs.run-ping == 'true'
     steps:
 
-      - name: Get token
-        id: get_workflow_token
-        uses: peter-murray/workflow-application-token-action@v2
-        with:
-          application_id: ${{ secrets.APPLICATION_ID }}
-          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-
       - name: Ping Test
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@main
         with:
-          token: ${{ steps.get_workflow_token.outputs.token }}
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
+
 
   # Update generated content
   autoformat:
@@ -65,15 +60,10 @@ jobs:
     if: needs.parse.outputs.run-autoformat == 'true'
     steps:
 
-      - name: Get token
-        id: get_workflow_token
-        uses: peter-murray/workflow-application-token-action@v2
-        with:
-          application_id: ${{ secrets.APPLICATION_ID }}
-          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-
       - name: Autoformat
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@main
         with:
-          token: ${{ steps.get_workflow_token.outputs.token }}
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
           github-context: "update / autoformat"
