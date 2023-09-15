@@ -1,6 +1,6 @@
-name: debugging context things
+name: short circuit test
 
-description: debugging context things
+description: short circuit test
 
 inputs:
   # either pass in a token, or an app id and private key
