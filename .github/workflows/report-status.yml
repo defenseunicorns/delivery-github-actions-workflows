@@ -1,4 +1,5 @@
-name: pre-commit
+name: report-status
+# uses TOKEN if provided, otherwise uses application_id and application_private_key for a github app
 
 on:
   workflow_call:
