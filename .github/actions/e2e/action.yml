@@ -25,6 +25,10 @@ inputs:
   test-to-run:
     description: Which test to run, either "secure" or "insecure"
     required: true
+  send-slack-message:
+    description: Whether to send a slack message or not
+    required: false
+    default: false
 
 runs:
   using: composite
@@ -161,6 +165,35 @@ runs:
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
         GITHUB_STATE: ${{ steps.run_e2e.outcome == 'cancelled' && 'error' || steps.run_e2e.outcome }}
 
+    - name: "Send slack message"
+    id: slack
+    uses: slackapi/slack-github-action@v1.24.0
+    with:
+      # For posting a rich message using Block Kit
+      payload: |
+        {
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": ":boom::poop::fan: Pipeline failed :fan::poop::boom:",
+                        "emoji": true
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "See the pipeline run here: <
+                        This is a mrkdwn section block :ghost: *this is bold*, and ~this is crossed out~, and <https://google.com|this is a link>"
+                    }
+                }
+            ]
+        }
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
     # this is because the github installation token expires after an hour, non-configurable, sometimes the tests take longer than an hour, also WHEN cancelled
     # https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app
     - name: "Get token again if cancelled"

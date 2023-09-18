@@ -31,6 +31,10 @@ on:
         default: "started by @${{ github.event.client_payload.github.actor || github.actor }}"
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: hmarr/debug-action@v2
   report-status-checks:
     runs-on: ubuntu-latest
     strategy:

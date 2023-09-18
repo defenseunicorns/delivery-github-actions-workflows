@@ -28,6 +28,8 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: debug in action inside queue
+      uses: hmarr/debug-action@v2
     - name: Get token
       id: get_installation_token
       uses: peter-murray/workflow-application-token-action@v2

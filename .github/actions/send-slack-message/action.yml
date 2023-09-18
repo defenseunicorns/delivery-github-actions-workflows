@@ -1,0 +1,35 @@
+name: Send slack message
+
+description: This action sends a slack message to a channel based on SLACK_WEBHOOK_URL
+
+inputs:
+  slack_webhook_url:
+    description: 'The Slack webhook URL to use for authentication'
+    required: true
+  text:
+    description: 'The text to send to Slack'
+    required: false
+    default: 'Hello from GitHub Actions!'
+
+runs:
+  using: composite
+  steps:
+    - name: Send Slack notification
+      id: slack
+      uses: slackapi/slack-github-action@v1.24.0
+      with:
+        payload: |
+          {
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "${{ inputs.text }}"
+                }
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.slack_webhook_url }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
