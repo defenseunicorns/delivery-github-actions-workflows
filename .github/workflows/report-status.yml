@@ -1,0 +1,47 @@
+name: pre-commit
+
+on:
+  workflow_call:
+    secrets:
+      TOKEN:
+        description: "GitHub App Token"
+        required: false
+      APPLICATION_ID:
+        description: "The GitHub App ID"
+        required: false
+      APPLICATION_PRIVATE_KEY:
+        description: "The GitHub App Private Key"
+        required: false
+
+    inputs:
+      status-checks:
+        description: "List of check types to run"
+        type: string
+        required: true
+      status:
+        description: "Status to report"
+        type: string
+        required: false
+        default: success
+      description:
+        description: "Description to report"
+        type: string
+        required: false
+        default: "started by @${{ github.event.client_payload.github.actor || github.actor }}"
+
+jobs:
+  report-status-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        status-check: ${{ fromJSON(inputs.status-checks) }}
+    steps:
+      - name: Report status
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/report-status-context@ci/merge-queue-workflow
+        with:
+          status-check: ${{ matrix.status-check }}
+          status: ${{ inputs.status }}
+          description: ${{ inputs.description }}
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
