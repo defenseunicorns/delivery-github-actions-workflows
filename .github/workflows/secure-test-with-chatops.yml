@@ -52,7 +52,7 @@ jobs:
     steps:
     - shell: bash -euxo pipefail {0}
       run: |
-        echo "${{ needs }}" | jq
+        echo "${{ needs.*.result }}"
 
   # Send slack message if the e2e-govcloud-secure test fails
   send-slack-message:
