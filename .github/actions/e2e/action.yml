@@ -26,6 +26,7 @@ inputs:
   github-context:
     description: The GitHub Status Context to use when updating the status
     required: false
+    default: 'default e2e test context'
   test-to-run:
     description: Which test to run, either "secure" or "insecure"
     required: true
