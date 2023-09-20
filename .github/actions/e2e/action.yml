@@ -19,9 +19,14 @@ inputs:
   role-to-assume:
     description: The AWS IAM Role to assume in the target account
     required: true
+  send-status:
+    description: Whether to send status updates to GitHub
+    required: false
+    default: true
   github-context:
     description: The GitHub Status Context to use when updating the status
-    required: true
+    required: false
+    default: 'default e2e test context'
   test-to-run:
     description: Which test to run, either "secure" or "insecure"
     required: true
@@ -41,6 +46,7 @@ runs:
     # Update GitHub status for pending pipeline run
     - name: "Update GitHub Status for pending"
       uses: docker://cloudposse/github-status-updater
+      if: ${{ inputs.send-status == 'true' }}
       with:
         args: "-action update_state -state pending -ref ${{ env.REPO_SHA }} -repo ${{ env.REPO_NAME }}"
       env:
@@ -139,7 +145,7 @@ runs:
     # https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app
     - name: "Get token again"
       id: get_installation_token_again
-      if: ${{ !inputs.token }}
+      if: ${{ inputs.send-status == 'true' && !inputs.token }}
       uses: peter-murray/workflow-application-token-action@v2
       with:
         application_id: ${{ inputs.application_id }}
@@ -147,6 +153,7 @@ runs:
 
     # Update GitHub status
     - name: "Update github status for failure or success"
+      if: ${{ inputs.send-status == 'true' }}
       uses: docker://cloudposse/github-status-updater
       with:
         args: "-action update_state -state ${{ env.GITHUB_STATE }} -ref ${{ env.REPO_SHA }} -repo ${{ env.REPO_NAME }}"
@@ -165,7 +172,7 @@ runs:
     # https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app
     - name: "Get token again if cancelled"
       id: get_installation_token_again_cancelled
-      if: ${{ !inputs.token && cancelled() }}
+      if: ${{ inputs.send-status == 'true' && !inputs.token && cancelled() }}
       uses: peter-murray/workflow-application-token-action@v2
       with:
         application_id: ${{ inputs.application_id }}
@@ -174,7 +181,7 @@ runs:
 
     # Update GitHub status for cancelled pipeline run
     - name: "Update GitHub Status for cancelled"
-      if: ${{ cancelled() }}
+      if: ${{ inputs.send-status == 'true' && cancelled() }}
       uses: docker://cloudposse/github-status-updater
       with:
         args: "-action update_state -state ${{ env.GITHUB_STATE }} -ref ${{ env.REPO_SHA }} -repo ${{ env.REPO_NAME }}"
