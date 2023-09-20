@@ -56,7 +56,7 @@ jobs:
                         "type": "header",
                         "text": {
                             "type": "plain_text",
-                            "text": ":boom::poop::fan: Secure Test Pipeline failed :fan::poop::boom:",
+                            "text": ":boom::poop::fan: Scheduled-e2e-secure-test Pipeline failed :fan::poop::boom:",
                             "emoji": true
                         }
                     },
