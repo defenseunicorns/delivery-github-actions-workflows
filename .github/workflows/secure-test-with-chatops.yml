@@ -49,7 +49,7 @@ jobs:
   # Send slack message if the e2e-govcloud-secure test fails
   send-slack-message:
     needs: e2e-govcloud-secure
-    if: contains(needs.*.result, 'failure')
+    if: contains(needs.*.outcome, 'failure')
     runs-on: ubuntu-latest
     steps:
       - name: Build slack message string
