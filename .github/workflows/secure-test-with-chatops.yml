@@ -1,0 +1,85 @@
+name: secure-test-with-chatops
+
+on:
+  workflow_call:
+    secrets:
+      TOKEN:
+        description: "GitHub App Token"
+        required: false
+      APPLICATION_ID:
+        description: "The GitHub App ID"
+        required: false
+      APPLICATION_PRIVATE_KEY:
+        description: "The GitHub App Private Key"
+        required: false
+      AWS_GOVCLOUD_ROLE_TO_ASSUME:
+        description: "AWS Govcloud IAM Role to assume"
+        required: true
+      SLACK_WEBHOOK_URL:
+        description: "Slack webhook URL to post failures to"
+        required: true
+
+jobs:
+  # Run secure e2e tests in govcloud
+  # e2e-govcloud-secure:
+  #   runs-on: ubuntu-latest
+  #   continue-on-error: true # if the pipeline fails, we want to send a slack message
+  #   steps:
+  #   - name: Run E2E govcloud secure tests
+  #     uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@ci/merge-queue-workflow
+  #     with:
+  #       application_id: ${{ secrets.APPLICATION_ID }}
+  #       application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+  #       token: ${{ secrets.TOKEN }}
+  #       role-to-assume: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
+  #       region: us-gov-east-1
+  #       send-status: false
+  #       test-to-run: "secure"
+
+  e2e-govcloud-secure:
+    runs-on: ubuntu-latest
+    continue-on-error: true # if the pipeline fails, we want to send a slack message
+    steps:
+    - name: Run E2E govcloud secure tests
+      shell: bash -euxo pipefail {0}
+      run: |
+        echo "failing on purpose to test da bot"
+        exit 1
+
+  # Send slack message if the e2e-govcloud-secure test fails
+  send-slack-message:
+    needs: e2e-govcloud-secure
+    if: contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build slack message string
+        run: |
+          echo "GITHUB_ACTION_RUN_URL=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_ENV
+
+      - name: "Send slack message"
+        id: slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+                "blocks": [
+                    {
+                        "type": "header",
+                        "text": {
+                            "type": "plain_text",
+                            "text": ":boom::poop::fan: Pipeline failed :fan::poop::boom:",
+                            "emoji": true
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See the pipeline run *<${{ env.GITHUB_ACTION_RUN_URL }}|here>* (this is just a test)"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

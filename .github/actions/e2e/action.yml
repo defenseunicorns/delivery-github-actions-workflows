@@ -19,16 +19,16 @@ inputs:
   role-to-assume:
     description: The AWS IAM Role to assume in the target account
     required: true
+  send-status:
+    description: Whether to send status updates to GitHub
+    required: false
+    default: true
   github-context:
     description: The GitHub Status Context to use when updating the status
-    required: true
+    required: false
   test-to-run:
     description: Which test to run, either "secure" or "insecure"
     required: true
-  send-slack-message:
-    description: Whether to send a slack message or not
-    required: false
-    default: false
 
 runs:
   using: composite
@@ -45,6 +45,7 @@ runs:
     # Update GitHub status for pending pipeline run
     - name: "Update GitHub Status for pending"
       uses: docker://cloudposse/github-status-updater
+      if: ${{ inputs.send-status == 'true' }}
       with:
         args: "-action update_state -state pending -ref ${{ env.REPO_SHA }} -repo ${{ env.REPO_NAME }}"
       env:
@@ -143,7 +144,7 @@ runs:
     # https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app
     - name: "Get token again"
       id: get_installation_token_again
-      if: ${{ !inputs.token }}
+      if: ${{ inputs.send-status == 'true' && !inputs.token }}
       uses: peter-murray/workflow-application-token-action@v2
       with:
         application_id: ${{ inputs.application_id }}
@@ -151,6 +152,7 @@ runs:
 
     # Update GitHub status
     - name: "Update github status for failure or success"
+      if: ${{ inputs.send-status == 'true' }}
       uses: docker://cloudposse/github-status-updater
       with:
         args: "-action update_state -state ${{ env.GITHUB_STATE }} -ref ${{ env.REPO_SHA }} -repo ${{ env.REPO_NAME }}"
@@ -165,40 +167,11 @@ runs:
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
         GITHUB_STATE: ${{ steps.run_e2e.outcome == 'cancelled' && 'error' || steps.run_e2e.outcome }}
 
-    - name: "Send slack message"
-    id: slack
-    uses: slackapi/slack-github-action@v1.24.0
-    with:
-      # For posting a rich message using Block Kit
-      payload: |
-        {
-            "blocks": [
-                {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
-                        "text": ":boom::poop::fan: Pipeline failed :fan::poop::boom:",
-                        "emoji": true
-                    }
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "See the pipeline run here: <
-                        This is a mrkdwn section block :ghost: *this is bold*, and ~this is crossed out~, and <https://google.com|this is a link>"
-                    }
-                }
-            ]
-        }
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
     # this is because the github installation token expires after an hour, non-configurable, sometimes the tests take longer than an hour, also WHEN cancelled
     # https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app
     - name: "Get token again if cancelled"
       id: get_installation_token_again_cancelled
-      if: ${{ !inputs.token && cancelled() }}
+      if: ${{ inputs.send-status == 'true' && !inputs.token && cancelled() }}
       uses: peter-murray/workflow-application-token-action@v2
       with:
         application_id: ${{ inputs.application_id }}
@@ -207,7 +180,7 @@ runs:
 
     # Update GitHub status for cancelled pipeline run
     - name: "Update GitHub Status for cancelled"
-      if: ${{ cancelled() }}
+      if: ${{ inputs.send-status == 'true' && cancelled() }}
       uses: docker://cloudposse/github-status-updater
       with:
         args: "-action update_state -state ${{ env.GITHUB_STATE }} -ref ${{ env.REPO_SHA }} -repo ${{ env.REPO_NAME }}"
