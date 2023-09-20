@@ -40,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # check if there are any relevant changes to run the tests on
+      # because we're watching .release-please-manifest.json, tests will always run on when using release please
       - uses: dorny/paths-filter@v2
         id: relevant_changes
         with:
@@ -100,6 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # check if there are any relevant changes to run the tests on
+      # because we're watching .release-please-manifest.json, tests will always run on when using release please
       - uses: dorny/paths-filter@v2
         id: relevant_changes
         with:
