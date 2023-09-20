@@ -38,7 +38,6 @@ jobs:
 
   e2e-govcloud-secure:
     runs-on: ubuntu-latest
-    continue-on-error: true # if the pipeline fails, we want to send a slack message
     steps:
     - name: Run E2E govcloud secure tests
       shell: bash -euxo pipefail {0}
