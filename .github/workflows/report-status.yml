@@ -31,10 +31,6 @@ on:
         default: "started by @${{ github.event.client_payload.github.actor || github.actor }}"
 
 jobs:
-  debug:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: hmarr/debug-action@v2
   report-status-checks:
     runs-on: ubuntu-latest
     strategy:
@@ -42,7 +38,7 @@ jobs:
         status-check: ${{ fromJSON(inputs.status-checks) }}
     steps:
       - name: Report status
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/report-status-context@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/report-status-context@ci/merge-queue-workflow
         with:
           status-check: ${{ matrix.status-check }}
           status: ${{ inputs.status }}
