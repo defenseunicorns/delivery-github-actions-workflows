@@ -78,7 +78,6 @@ jobs:
           github-context: "test / e2e-commercial-insecure"
           test-to-run: "insecure"
 
-# I need a new job that will get the branch name from the merge-group's PR # in temp branch, set that as output and then use it to run e2e-govcloud-secure
   # Get branch name from merge-group's PR
   get-branch-name:
     if: github.event_name == 'merge_group'
