@@ -67,8 +67,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: parse
     if: needs.parse.outputs.run-e2e-commercial-insecure == 'true'
+    permissions:
+      id-token: write # needed for oidc auth for AWS creds
     steps:
-
       - name: Run E2E Tests
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
         with:
@@ -85,8 +86,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: parse
     if: needs.parse.outputs.run-e2e-govcloud-secure == 'true'
+    permissions:
+      id-token: write # needed for oidc auth for AWS creds
     steps:
-
       - name: Run E2E Tests
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
         with:
