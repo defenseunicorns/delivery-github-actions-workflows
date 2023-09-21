@@ -14,16 +14,10 @@ on:
         description: "The GitHub App Private Key"
         required: false
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
-
   release-please:
     runs-on: ubuntu-latest
     steps:
-
       - name: Get token
         id: get_installation_token
         uses: peter-murray/workflow-application-token-action@v2
