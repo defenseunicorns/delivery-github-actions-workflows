@@ -23,6 +23,7 @@ jobs:
         with:
           application_id: ${{ secrets.NARWHAL_BOT_APP_ID }}
           application_private_key: ${{ secrets.NARWHAL_BOT_SECRET }}
+          organization: ${{ github.repository_owner }}
         env:
           TOKEN: ${{ secrets.TOKEN }}
 
