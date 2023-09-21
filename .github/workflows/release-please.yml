@@ -2,9 +2,17 @@
 name: release-please
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    secrets:
+      TOKEN:
+        description: "GitHub App Token"
+        required: false
+      APPLICATION_ID:
+        description: "The GitHub App ID"
+        required: false
+      APPLICATION_PRIVATE_KEY:
+        description: "The GitHub App Private Key"
+        required: false
 
 permissions:
   contents: write
@@ -21,8 +29,8 @@ jobs:
         uses: peter-murray/workflow-application-token-action@v2
         if: ${{ !env.TOKEN }}
         with:
-          application_id: ${{ secrets.NARWHAL_BOT_APP_ID }}
-          application_private_key: ${{ secrets.NARWHAL_BOT_SECRET }}
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           organization: ${{ github.repository_owner }}
         env:
           TOKEN: ${{ secrets.TOKEN }}
