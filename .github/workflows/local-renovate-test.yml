@@ -36,15 +36,3 @@ jobs:
         with:
           token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
           github-context: "update / autoformat"
-
-      - name: Wait 5 seconds
-        run: sleep 5
-
-      - name: Create comment
-        uses: peter-evans/create-or-update-comment@v3
-        with:
-          token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
-          repository: ${{ github.repository }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            /test all
