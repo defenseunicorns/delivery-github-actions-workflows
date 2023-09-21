@@ -122,7 +122,7 @@ runs:
         key: "${{ runner.os }}-terraform-plugins|${{ steps.get_tf_version.outputs.tf_version }}|${{ hashFiles('examples/complete/providers.tf') }}"
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: ${{ inputs.role-to-assume }}
         role-session-name: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}_${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}

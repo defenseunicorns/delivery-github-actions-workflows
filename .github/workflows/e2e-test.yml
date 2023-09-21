@@ -68,7 +68,6 @@ jobs:
     needs: parse
     if: needs.parse.outputs.run-e2e-commercial-insecure == 'true'
     steps:
-
       - name: Run E2E Tests
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
         with:
@@ -86,7 +85,6 @@ jobs:
     needs: parse
     if: needs.parse.outputs.run-e2e-govcloud-secure == 'true'
     steps:
-
       - name: Run E2E Tests
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
         with:
