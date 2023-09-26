@@ -29,6 +29,9 @@ runs:
         application_id: ${{ inputs.application_id }}
         application_private_key: ${{ inputs.application_private_key }}
 
+    - name: debug
+      uses: hmarr/debug-action@v2
+
     # Update GitHub status for pending pipeline run
     - name: "Update GitHub Status for pending"
       uses: docker://cloudposse/github-status-updater
