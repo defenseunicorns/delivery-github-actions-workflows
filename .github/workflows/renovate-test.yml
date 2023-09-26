@@ -33,7 +33,6 @@ jobs:
     if: github.event.client_payload.github.actor == 'renovate[bot]' || github.actor == 'renovate[bot]'
     runs-on: ubuntu-latest
     steps:
-
       - name: Get token
         id: get_installation_token
         uses: peter-murray/workflow-application-token-action@v2

@@ -22,7 +22,6 @@ on:
         required: true
 
 jobs:
-
   # Parse the command, so we can decide which tests to run. Examples: "/test all", "/test validate", "/test e2e"
   # We can do as many of these as we want to get as granular as we want.
   parse:
@@ -40,7 +39,6 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
-
       - name: Update Comment
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
         with:
@@ -54,7 +52,6 @@ jobs:
     needs: parse
     if: needs.parse.outputs.run-ping == 'true'
     steps:
-
       - name: Ping Test
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@main
         with:

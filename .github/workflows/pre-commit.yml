@@ -27,7 +27,6 @@ jobs:
       matrix:
         check-type: ${{ fromJSON(inputs.check-types) }}
     steps:
-
       - name: pre-commit
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:

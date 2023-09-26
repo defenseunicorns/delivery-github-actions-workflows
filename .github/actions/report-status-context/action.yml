@@ -1,17 +1,17 @@
 name: Report Github Action Status Check Context
 
-description:  Report Github Action Status Check Context
+description: Report Github Action Status Check Context
 
 inputs:
   # either pass in a token, or an app id and private key
   token:
-    description: 'The GitHub token to use for authentication'
+    description: "The GitHub token to use for authentication"
     required: false
   application_id:
-    description: 'The GitHub App ID'
+    description: "The GitHub App ID"
     required: false
   application_private_key:
-    description: 'The GitHub App private key'
+    description: "The GitHub App private key"
     required: false
   status-check:
     description: "the status check to report"

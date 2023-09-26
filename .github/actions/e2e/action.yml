@@ -5,13 +5,13 @@ description: Run E2E Tests
 inputs:
   # either pass in a token, or an app id and private key
   token:
-    description: 'The GitHub token to use for authentication'
+    description: "The GitHub token to use for authentication"
     required: false
   application_id:
-    description: 'The GitHub App ID'
+    description: "The GitHub App ID"
     required: false
   application_private_key:
-    description: 'The GitHub App private key'
+    description: "The GitHub App private key"
     required: false
   region:
     description: The AWS region to deploy to
@@ -26,7 +26,7 @@ inputs:
   github-context:
     description: The GitHub Status Context to use when updating the status
     required: false
-    default: 'default e2e test context'
+    default: "default e2e test context"
   test-to-run:
     description: Which test to run, either "secure" or "insecure"
     required: true
@@ -34,7 +34,6 @@ inputs:
 runs:
   using: composite
   steps:
-
     - name: Get token
       id: get_installation_token
       uses: peter-murray/workflow-application-token-action@v2
@@ -62,10 +61,10 @@ runs:
     - name: Validate test-to-run input
       shell: bash -e -o pipefail {0}
       run: |
-          if [[ "${{ inputs.test-to-run }}" != "secure" && "${{ inputs.test-to-run }}" != "insecure" ]]; then
-          echo "Invalid test-to-run input: '${{ inputs.test-to-run }}'. Valid inputs are 'secure' or 'insecure'."
-          exit 1
-          fi
+        if [[ "${{ inputs.test-to-run }}" != "secure" && "${{ inputs.test-to-run }}" != "insecure" ]]; then
+        echo "Invalid test-to-run input: '${{ inputs.test-to-run }}'. Valid inputs are 'secure' or 'insecure'."
+        exit 1
+        fi
 
     - name: Checkout Repo for chatOps
       uses: actions/checkout@v4
@@ -177,7 +176,6 @@ runs:
       with:
         application_id: ${{ inputs.application_id }}
         application_private_key: ${{ inputs.application_private_key }}
-
 
     # Update GitHub status for cancelled pipeline run
     - name: "Update GitHub Status for cancelled"

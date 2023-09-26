@@ -24,16 +24,16 @@ jobs:
   e2e-govcloud-secure:
     runs-on: ubuntu-latest
     steps:
-    - name: Run E2E govcloud secure tests
-      uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
-      with:
-        application_id: ${{ secrets.APPLICATION_ID }}
-        application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-        token: ${{ secrets.TOKEN }}
-        role-to-assume: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
-        region: us-gov-east-1
-        send-status: false
-        test-to-run: "secure"
+      - name: Run E2E govcloud secure tests
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
+          role-to-assume: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
+          region: us-gov-east-1
+          send-status: false
+          test-to-run: "secure"
 
   # Send slack message if the e2e-govcloud-secure test fails
   send-slack-message:

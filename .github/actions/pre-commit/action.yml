@@ -1,78 +1,77 @@
-  name: Run Pre-Commit Hooks
+name: Run Pre-Commit Hooks
 
-  description: Run pre-commit hooks
+description: Run pre-commit hooks
 
-  inputs:
-    # either pass in a token, or an app id and private key
-    token:
-      description: 'The GitHub token to use for authentication'
-      required: false
-    application_id:
-      description: 'The GitHub App ID'
-      required: false
-    application_private_key:
-      description: 'The GitHub App private key'
-      required: false
-    check-type:
-      description: The type of check to run. Valid values are "all", "common", "terraform", "golang", and "renovate"
-      required: true
-      default: all
+inputs:
+  # either pass in a token, or an app id and private key
+  token:
+    description: "The GitHub token to use for authentication"
+    required: false
+  application_id:
+    description: "The GitHub App ID"
+    required: false
+  application_private_key:
+    description: "The GitHub App private key"
+    required: false
+  check-type:
+    description: The type of check to run. Valid values are "all", "common", "terraform", "golang", and "renovate"
+    required: true
+    default: all
 
-  runs:
-    using: composite
-    steps:
+runs:
+  using: composite
+  steps:
+    - name: Get token
+      id: get_installation_token
+      uses: peter-murray/workflow-application-token-action@v2
+      if: ${{ !inputs.token }}
+      with:
+        application_id: ${{ inputs.application_id }}
+        application_private_key: ${{ inputs.application_private_key }}
 
-      - name: Get token
-        id: get_installation_token
-        uses: peter-murray/workflow-application-token-action@v2
-        if: ${{ !inputs.token }}
-        with:
-          application_id: ${{ inputs.application_id }}
-          application_private_key: ${{ inputs.application_private_key }}
+    - name: Checkout caller repo for processing this action
+      uses: actions/checkout@v4
+      with:
+        token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
+        repository: ${{ github.event.client_payload.pull_request.head.repo.full_name || github.repository }}
+        ref: ${{ github.event.client_payload.pull_request.head.ref || github.ref }}
 
-      - name: Checkout caller repo for processing this action
-        uses: actions/checkout@v4
-        with:
-          token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
-          repository: ${{ github.event.client_payload.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.client_payload.pull_request.head.ref || github.ref }}
+    - name: Init pre-commit cache
+      uses: actions/cache@v3
+      with:
+        path: "${{ github.workspace }}/.cache/pre-commit"
+        key: "pre-commit-${{inputs.check-type}}|${{hashFiles('.tool-versions')}}|${{hashFiles('.pre-commit-config.yaml')}}"
 
-      - name: Init pre-commit cache
-        uses: actions/cache@v3
-        with:
-          path: "${{ github.workspace }}/.cache/pre-commit"
-          key: "pre-commit-${{inputs.check-type}}|${{hashFiles('.tool-versions')}}|${{hashFiles('.pre-commit-config.yaml')}}"
+    - name: Init gopath cache
+      if: inputs.check-type == 'golang' || inputs.check-type == 'all'
+      uses: actions/cache@v3
+      with:
+        path: "${{ github.workspace }}/.cache/go"
+        key: "gopath|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
 
-      - name: Init gopath cache
-        if: inputs.check-type == 'golang' || inputs.check-type == 'all'
-        uses: actions/cache@v3
-        with:
-          path: "${{ github.workspace }}/.cache/go"
-          key: "gopath|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
+    - name: Init gobuild cache
+      if: inputs.check-type == 'golang' || inputs.check-type == 'all'
+      uses: actions/cache@v3
+      with:
+        path: "${{ github.workspace }}/.cache/go-build"
+        key: "gobuild|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
 
-      - name: Init gobuild cache
-        if: inputs.check-type == 'golang' || inputs.check-type == 'all'
-        uses: actions/cache@v3
-        with:
-          path: "${{ github.workspace }}/.cache/go-build"
-          key: "gobuild|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
+    - name: Init docker cache
+      id: init-docker-cache
+      uses: actions/cache@v3
+      with:
+        path: "${{ github.workspace }}/.cache/docker"
+        key: "docker|${{ hashFiles('.env') }}"
 
-      - name: Init docker cache
-        id: init-docker-cache
-        uses: actions/cache@v3
-        with:
-          path: "${{ github.workspace }}/.cache/docker"
-          key: "docker|${{ hashFiles('.env') }}"
+    - name: Docker save build harness
+      if: steps.init-docker-cache.outputs.cache-hit != 'true'
+      shell: bash -e -o pipefail {0}
+      run: make docker-save-build-harness
 
-      - name: Docker save build harness
-        if: steps.init-docker-cache.outputs.cache-hit != 'true'
-        shell: bash -e -o pipefail {0}
-        run: make docker-save-build-harness
+    - name: Load build harness
+      shell: bash -e -o pipefail {0}
+      run: make docker-load-build-harness
 
-      - name: Load build harness
-        shell: bash -e -o pipefail {0}
-        run: make docker-load-build-harness
-
-      - name: Run `pre-commit run -a`
-        shell: bash -e -o pipefail {0}
-        run: "make pre-commit-${{inputs.check-type}} fix-cache-permissions"
+    - name: Run `pre-commit run -a`
+      shell: bash -e -o pipefail {0}
+      run: "make pre-commit-${{inputs.check-type}} fix-cache-permissions"
