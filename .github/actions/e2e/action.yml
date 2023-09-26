@@ -68,7 +68,7 @@ runs:
           fi
 
     - name: Checkout Repo for chatOps
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
         repository: ${{ github.event.client_payload.pull_request.head.repo.full_name || github.repository }}
