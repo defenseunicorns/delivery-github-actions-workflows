@@ -5,22 +5,27 @@ description: Autoformat code using pre-commit
 inputs:
   # either pass in a token, or an app id and private key
   token:
-    description: 'The GitHub token to use for authentication'
+    description: "The GitHub token to use for authentication"
     required: false
   application_id:
-    description: 'The GitHub App ID'
+    description: "The GitHub App ID"
     required: false
   application_private_key:
-    description: 'The GitHub App private key'
+    description: "The GitHub App private key"
     required: false
   github-context:
     description: The GitHub Status Context to use when updating the status
+    required: true
+  gpg_private_key:
+    description: The GPG private key to use for signing commits
+    required: true
+  gpg_key_passphrase:
+    description: The passphrase for the GPG private key
     required: true
 
 runs:
   using: composite
   steps:
-
     - name: Get token
       id: get_installation_token
       uses: peter-murray/workflow-application-token-action@v2
@@ -104,8 +109,13 @@ runs:
         # Make it always return 0 since changing files is considered a failure by pre-commit
         make autoformat fix-cache-permissions || true
 
-    # Configure signed commits
-    - uses: chainguard-dev/actions/setup-gitsign@main
+    - name: Import GPG key
+      uses: crazy-max/ghaction-import-gpg@v6
+      with:
+        gpg_private_key: ${{ inputs.gpg_private_key }}
+        passphrase: ${{ inputs.gpg_key_passphrase }}
+        git_user_signingkey: true
+        git_commit_gpgsign: true
 
     - name: Commit and push changes
       uses: stefanzweifel/git-auto-commit-action@v4
