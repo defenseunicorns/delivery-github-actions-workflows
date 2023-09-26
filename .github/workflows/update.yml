@@ -67,4 +67,6 @@ jobs:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           token: ${{ secrets.TOKEN }}
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg_private_key: ${{ secrets.GPG_KEY_PASSPHRASE }}
           github-context: "update / autoformat"
