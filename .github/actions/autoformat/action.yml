@@ -140,9 +140,9 @@ runs:
         jq \
           --null-input \
           --raw-input \
-          --arg repositoryNameWithOwner "$GITHUB_REPOSITORY" \
-          --arg branchName "$GITHUB_REF_NAME" \
-          --arg expectedHeadOid "$GITHUB_SHA" \
+          --arg repositoryNameWithOwner "${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}" \
+          --arg branchName "${{ github.event.client_payload.pull_request.head.ref || github.event.pull_request.head.ref || github.ref_name }}" \
+          --arg expectedHeadOid "${{ github.event.client_payload.pull_request.head.sha || github.event.pull_request.head.sha || github.sha }}" \
           --arg commitMessage "$commitMessage" \
           '
         {
