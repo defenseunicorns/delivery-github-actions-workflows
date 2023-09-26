@@ -29,10 +29,6 @@ jobs:
         env:
           TOKEN: ${{ secrets.TOKEN }}
 
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
-
       - uses: google-github-actions/release-please-action@v3
         with:
           token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
