@@ -104,6 +104,9 @@ runs:
         # Make it always return 0 since changing files is considered a failure by pre-commit
         make autoformat fix-cache-permissions || true
 
+    # Configure signed commits
+    - uses: chainguard-dev/actions/setup-gitsign@main
+
     - name: Commit and push changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
