@@ -99,10 +99,9 @@ runs:
         key: "${{ runner.os }}-terraform-plugins|${{ steps.get_tf_version.outputs.tf_version }}|${{ hashFiles('examples/complete/providers.tf') }}"
 
     - name: Update files with automatic formatting tools
-      shell: bash -e -o pipefail {0}
+      shell: bash # no -e or pipefail as we want autoformat to run twice if the first one fails
       run: |
-        # Make it always return 0 since changing files is considered a failure by pre-commit
-        make autoformat fix-cache-permissions || true
+        make autoformat fix-cache-permissions || make autoformat
 
       # Use the GraphQL API to commit changes, so we get automatic commit signing - https://docs.github.com/en/graphql/reference/mutations#commit-signing
       # The REST contents API can't be used as easily because it only supports making single file commits
