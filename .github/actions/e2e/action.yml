@@ -74,30 +74,40 @@ runs:
         repository: ${{ github.event.client_payload.pull_request.head.repo.full_name || github.repository }}
         ref: ${{ github.event.client_payload.pull_request.head.ref || github.ref_name }}
 
+    - name: Get versions of relevant tools for github cache
+      id: get_tool_versions
+      shell: bash -e -o pipefail {0}
+      run: |
+        echo "TF_VERSION=$(asdf list terraform | sed 's/\*//')" >> $GITHUB_OUTPUT
+        echo "GOLANG_VERSION=$(asdf list golang | sed 's/\*//')" >> $GITHUB_OUTPUT
+        echo "ZARF_VERSION=$(asdf list zarf | sed 's/\*//')" >> $GITHUB_OUTPUT
+        echo "BUILD_HARNESS_VERSION=$(grep BUILD_HARNESS_VERSION .env | awk -F'=' '{print $2}')" >> $GITHUB_OUTPUT
+
+
     - name: Init gopath cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/go"
-        key: "gopath|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
+        key: "gopath|${{ steps.get_tool_versions.outputs.GOLANG_VERSION }}|${{ hashFiles('go.sum') }}"
 
     - name: Init gobuild cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/go-build"
-        key: "gobuild|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
+        key: "gobuild|${{ steps.get_tool_versions.outputs.GOLANG_VERSION }}|${{ hashFiles('go.sum') }}"
 
     - name: Init zarf cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/.zarf-cache"
-        key: "zarf|${{ hashFiles('.tool-versions') }}"
+        key: "zarf|${{ steps.get_tool_versions.outputs.ZARF_VERSION }}"
 
     - name: Init docker cache
       id: init-docker-cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/docker"
-        key: "docker|${{ hashFiles('.env') }}"
+        key: "docker|${{ steps.get_tool_versions.outputs.BUILD_HARNESS_VERSION }}"
 
     - name: Docker save build harness
       if: steps.init-docker-cache.outputs.cache-hit != 'true'
@@ -110,16 +120,11 @@ runs:
       run: |
         make docker-load-build-harness
 
-    - name: Get Terraform version from .tool-versions
-      id: get_tf_version
-      shell: bash -e -o pipefail {0}
-      run: echo "tf_version=$(grep 'terraform ' .tool-versions)" >> $GITHUB_OUTPUT
-
     - name: Init Terraform Cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/.terraform.d/plugin-cache"
-        key: "${{ runner.os }}-terraform-plugins|${{ steps.get_tf_version.outputs.tf_version }}|${{ hashFiles('examples/complete/providers.tf') }}"
+        key: "${{ runner.os }}-terraform-plugins|${{ steps.get_tool_versions.outputs.TF_VERSION }}|${{ hashFiles('examples/complete/providers.tf') }}"
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
