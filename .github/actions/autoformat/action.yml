@@ -117,8 +117,11 @@ runs:
       env:
         GITHUB_TOKEN: ${{ steps.get_installation_token.outputs.token || github.token }}
       run: |
+        # Initialize empty arrays for storing filenames that are added or removed
         additions=()
         removed=()
+
+        # Read the git status output and categorize files as added or removed
         while IFS= read -r -d $'\0' status_line; do
             filename="${status_line:3}"
             git_status="${status_line:0:2}"
@@ -126,29 +129,30 @@ runs:
             if [ "$git_status" = "D " ]; then
                 removed+=("$filename")
             else
-                additions+=("$filename")
+                file_contents=$(base64 < "$filename")
+                additions+=("$file_contents,$filename")
             fi
         done < <(git status --porcelain=v1 -z)
 
-        if [ "${#additions[@]}" -eq 0 ] ; then
+        # If there are no additions, exit the script
+        if [ "${#additions[@]}" -eq 0 ]; then
           echo "No files updated, skipping commit"
           exit 0
         fi
 
-        commitMessage="chore: pre-commit autoformatting"
-
         # for now, we ignore $removed files, but they could be handled similarly (it's just harder to send two lists of positional input files into jq)
         # jq's iteration over inputs will skip over files with 0 lines (empty files)
 
+        commitMessage="chore: automated formatting of files"
+
         jq \
           --null-input \
-          --raw-input \
           --arg repositoryNameWithOwner "${{ github.event.client_payload.github.payload.repository.full_name || github.event.repository.full_name }}" \
           --arg branchName "${{ github.event.client_payload.pull_request.head.ref || github.event.pull_request.head.ref || github.ref_name }}" \
           --arg expectedHeadOid "${{ github.event.client_payload.pull_request.head.sha || github.event.pull_request.head.sha || github.sha }}" \
           --arg commitMessage "$commitMessage" \
-          '
-        {
+          --argjson fileContentsAndNames "$(echo "${additions[@]}" | jq -R -c 'split(" ") | map(split(",") | {contents: .[0], filename: .[1]})')" \
+          '{
           "query": "mutation ($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { url } } }",
           "variables": {
             "input": {
@@ -160,12 +164,13 @@ runs:
                 "headline": $commitMessage
               },
               "fileChanges": {
-                "additions": [reduce inputs as $line ({}; .[input_filename] += [$line]) | map_values(join("\n")) | to_entries[] | {path: .key, contents: .value | @base64}]
+                "additions": $fileContentsAndNames
               },
               "expectedHeadOid": $expectedHeadOid
             }
           }
-        }' "${additions[@]}" | curl https://api.github.com/graphql \
+        }' | \
+        curl https://api.github.com/graphql \
           --silent \
           --fail-with-body \
           --oauth2-bearer "$(gh auth token)" \
