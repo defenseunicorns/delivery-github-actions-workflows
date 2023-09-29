@@ -146,7 +146,7 @@ runs:
         commitMessage="chore: automated formatting of files"
 
         jq \
-          --raw-inputs\
+          --raw-inputs \
           --null-input \
           --arg repositoryNameWithOwner "${{ github.event.client_payload.github.payload.repository.full_name || github.event.repository.full_name }}" \
           --arg branchName "${{ github.event.client_payload.pull_request.head.ref || github.event.pull_request.head.ref || github.ref_name }}" \
