@@ -28,7 +28,7 @@ jobs:
         check-type: ${{ fromJSON(inputs.check-types) }}
     steps:
       - name: Get buildharness software versions
-        id: buildharness_software_versions
+        id: buildharness-software-versions
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/get-buildharness-software-versions@main
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
