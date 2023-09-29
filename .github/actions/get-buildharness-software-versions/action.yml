@@ -54,7 +54,7 @@ runs:
         echo "BUILD_HARNESS_VERSION=$BUILD_HARNESS_VERSION" >> $GITHUB_OUTPUT
 
         TOOL_VERSIONS=$(curl -SsL --retry 3 https://raw.githubusercontent.com/defenseunicorns/build-harness/$BUILD_HARNESS_VERSION/.tool-versions)
-        echo GOLANG_VERSION=$(grep -w 'golang' <<<"$TOOL_VERSIONS " | awk '{print $2}') >> $GITHUB_OUTPUT
-        echo TF_VERSION=$(grep -w 'terraform' <<<"$TOOL_VERSIONS " | awk '{print $2}') >> $GITHUB_OUTPUT
-        echo ZARF_VERSION=$(grep -w 'zarf' <<<"$TOOL_VERSIONS " | awk '{print $2}') >> $GITHUB_OUTPUT
+        echo GOLANG_VERSION=$(grep '\bgolang\b' <<<"$TOOL_VERSIONS" | awk '{print $2}') >> $GITHUB_OUTPUT
+        echo TF_VERSION=$(grep '\bterraform\b' <<<"$TOOL_VERSIONS" | awk '{print $2}') >> $GITHUB_OUTPUT
+        echo ZARF_VERSION=$(grep '\bzarf\b' <<<"$TOOL_VERSIONS" | awk '{print $2}') >> $GITHUB_OUTPUT
 
