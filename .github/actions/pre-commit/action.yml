@@ -17,6 +17,12 @@ inputs:
     description: The type of check to run. Valid values are "all", "common", "terraform", "golang", and "renovate"
     required: true
     default: all
+  buildharness_version:
+    description: The version of buildharness used by the caller repo
+    required: true
+  golang_version:
+    description: The version of golang used by the buildharness release from the caller repo
+    required: true
 
 runs:
   using: composite
@@ -42,35 +48,24 @@ runs:
         path: "${{ github.workspace }}/.cache/pre-commit"
         key: "pre-commit-${{inputs.check-type}}|${{hashFiles('.pre-commit-config.yaml')}}"
 
-    - name: Get versions of relevant tools for github cache
-      id: get_tool_versions
-      shell: bash -e -o pipefail {0}
-      run: |
-        echo "TF_VERSION=$(asdf list terraform | sed 's/\*//')" >> $GITHUB_OUTPUT
-        echo "GOLANG_VERSION=$(asdf list golang | sed 's/\*//')" >> $GITHUB_OUTPUT
-        echo "ZARF_VERSION=$(asdf list zarf | sed 's/\*//')" >> $GITHUB_OUTPUT
-        echo "BUILD_HARNESS_VERSION=$(grep BUILD_HARNESS_VERSION .env | awk -F'=' '{print $2}')" >> $GITHUB_OUTPUT
-
     - name: Init gopath cache
-      if: inputs.check-type == 'golang' || inputs.check-type == 'all'
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/go"
-        key: "gopath|${{ steps.get_tool_versions.outputs.GOLANG_VERSION }}|${{ hashFiles('go.sum') }}"
+        key: "gopath|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
 
     - name: Init gobuild cache
-      if: inputs.check-type == 'golang' || inputs.check-type == 'all'
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/go-build"
-        key: "gobuild|${{ steps.get_tool_versions.outputs.GOLANG_VERSION }}|${{ hashFiles('go.sum') }}"
+        key: "gobuild|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
 
     - name: Init docker cache
       id: init-docker-cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/docker"
-        key: "docker|${{ steps.get_tool_versions.outputs.BUILD_HARNESS_VERSION }}"
+        key: "docker|${{ inputs.buildharness_version }}"
 
     - name: Docker save build harness
       if: steps.init-docker-cache.outputs.cache-hit != 'true'
