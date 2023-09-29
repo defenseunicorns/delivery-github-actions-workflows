@@ -16,6 +16,18 @@ inputs:
   github-context:
     description: The GitHub Status Context to use when updating the status
     required: true
+  buildharness_version:
+    description: The version of buildharness used by the caller repo
+    required: true
+  golang_version:
+    description: The version of golang used by the buildharness release from the caller repo
+    required: true
+  terraform_version:
+    description: The version of terraform used by the buildharness release from the caller repo
+    required: true
+  zarf_version:
+    description: The version of zarf used by the buildharness release from the caller repo
+    required: true
 
 runs:
   using: composite
@@ -51,40 +63,30 @@ runs:
         repository: ${{ github.event.client_payload.pull_request.head.repo.full_name || github.repository }}
         ref: ${{ github.event.client_payload.pull_request.head.ref || github.ref }}
 
-    - name: Get versions of relevant tools for github cache
-      id: get_tool_versions
-      shell: bash -e -o pipefail {0}
-      run: |
-        echo "TF_VERSION=$(asdf list terraform | sed 's/\*//')" >> $GITHUB_OUTPUT
-        echo "GOLANG_VERSION=$(asdf list golang | sed 's/\*//')" >> $GITHUB_OUTPUT
-        echo "ZARF_VERSION=$(asdf list zarf | sed 's/\*//')" >> $GITHUB_OUTPUT
-        echo "BUILD_HARNESS_VERSION=$(grep BUILD_HARNESS_VERSION .env | awk -F'=' '{print $2}')" >> $GITHUB_OUTPUT
-
-
     - name: Init gopath cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/go"
-        key: "gopath|${{ steps.get_tool_versions.outputs.GOLANG_VERSION }}|${{ hashFiles('go.sum') }}"
+        key: "gopath|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
 
     - name: Init gobuild cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/go-build"
-        key: "gobuild|${{ steps.get_tool_versions.outputs.GOLANG_VERSION }}|${{ hashFiles('go.sum') }}"
+        key: "gobuild|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
 
     - name: Init zarf cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/.zarf-cache"
-        key: "zarf|${{ steps.get_tool_versions.outputs.ZARF_VERSION }}"
+        key: "zarf|${{ inputs.zarf_version }}"
 
     - name: Init docker cache
       id: init-docker-cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/docker"
-        key: "docker|${{ steps.get_tool_versions.outputs.BUILD_HARNESS_VERSION }}"
+        key: "docker|${{ inputs.buildharness_version }}"
 
     - name: Docker save build harness
       if: steps.init-docker-cache.outputs.cache-hit != 'true'
@@ -101,7 +103,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/.terraform.d/plugin-cache"
-        key: "${{ runner.os }}-terraform-plugins|${{ steps.get_tool_versions.outputs.TF_VERSION }}|${{ hashFiles('examples/complete/providers.tf') }}"
+        key: "${{ runner.os }}-terraform-plugins|${{ inputs.terraform_version }}|${{ hashFiles('examples/complete/providers.tf') }}"
 
     - name: Update files with automatic formatting tools
       shell: bash -e -o pipefail {0}
