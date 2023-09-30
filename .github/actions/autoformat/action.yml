@@ -129,7 +129,7 @@ runs:
             if [ "$git_status" = "D " ]; then
                 removed+=("$filename")
             else
-                file_contents=$(base64 < "$filename")
+                file_contents=$(base64 -w 0 < "$filename")
                 additions+=("$file_contents,$filename")
             fi
         done < <(git status --porcelain=v1 -z)
