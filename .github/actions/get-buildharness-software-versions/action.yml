@@ -1,0 +1,60 @@
+name: Get buildharness software versions
+
+description: This action gets the versions of the tools used by buildharness and outputs them as environment variables.
+
+inputs:
+  # either pass in a token, or an app id and private key, only needed for private repos
+  token:
+    description: 'The GitHub token to use for authentication'
+    required: false
+  application_id:
+    description: 'The GitHub App ID'
+    required: false
+  application_private_key:
+    description: 'The GitHub App private key'
+    required: false
+
+outputs:
+  buildharness_version:
+    description: The version of buildharness used by the caller repo
+    value: ${{ steps.tool-versions.outputs.BUILD_HARNESS_VERSION }}
+  golang_version:
+    description: The version of golang used by buildharness
+    value: ${{ steps.tool-versions.outputs.GOLANG_VERSION }}
+  terraform_version:
+    description: The version of terraform used by buildharness
+    value: ${{ steps.tool-versions.outputs.TF_VERSION }}
+  zarf_version:
+    description: The version of zarf used by buildharness
+    value: ${{ steps.tool-versions.outputs.ZARF_VERSION }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get token
+      id: get_installation_token
+      uses: peter-murray/workflow-application-token-action@v2
+      if: ${{ !inputs.token }}
+      with:
+        application_id: ${{ inputs.application_id }}
+        application_private_key: ${{ inputs.application_private_key }}
+
+    - name: Checkout repo to get buildharness version
+      uses: actions/checkout@v4
+      with:
+        token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
+        repository: ${{ github.event.client_payload.pull_request.head.repo.full_name || github.repository }}
+        ref: ${{ github.event.client_payload.pull_request.head.ref || github.ref }}
+
+    - name: Get .tool-versions file using curl, and set outputs
+      shell: bash -e -o pipefail {0}
+      id: tool-versions
+      run: |
+        BUILD_HARNESS_VERSION=$(grep BUILD_HARNESS_VERSION .env | awk -F'=' '{print $2}')
+        echo "BUILD_HARNESS_VERSION=$BUILD_HARNESS_VERSION" >> $GITHUB_OUTPUT
+
+        TOOL_VERSIONS=$(curl -SsL --retry 3 https://raw.githubusercontent.com/defenseunicorns/build-harness/$BUILD_HARNESS_VERSION/.tool-versions)
+        echo GOLANG_VERSION=$(grep 'golang ' <<<"$TOOL_VERSIONS" | awk '{print $2}') >> $GITHUB_OUTPUT
+        echo TF_VERSION=$(grep 'terraform ' <<<"$TOOL_VERSIONS" | awk '{print $2}') >> $GITHUB_OUTPUT
+        echo ZARF_VERSION=$(grep 'zarf ' <<<"$TOOL_VERSIONS" | awk '{print $2}') >> $GITHUB_OUTPUT
+

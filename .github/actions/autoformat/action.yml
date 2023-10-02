@@ -16,6 +16,18 @@ inputs:
   github-context:
     description: The GitHub Status Context to use when updating the status
     required: true
+  buildharness_version:
+    description: The version of buildharness used by the caller repo
+    required: true
+  golang_version:
+    description: The version of golang used by the buildharness release from the caller repo
+    required: true
+  terraform_version:
+    description: The version of terraform used by the buildharness release from the caller repo
+    required: true
+  zarf_version:
+    description: The version of zarf used by the buildharness release from the caller repo
+    required: true
 
 runs:
   using: composite
@@ -45,7 +57,7 @@ runs:
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
 
     - name: Checkout caller repo for processing this action
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
         repository: ${{ github.event.client_payload.pull_request.head.repo.full_name || github.repository }}
@@ -55,26 +67,26 @@ runs:
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/go"
-        key: "gopath|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
+        key: "gopath|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
 
     - name: Init gobuild cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/go-build"
-        key: "gobuild|${{ hashFiles('.tool-versions') }}|${{ hashFiles('go.sum') }}"
+        key: "gobuild|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
 
     - name: Init zarf cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/.zarf-cache"
-        key: "zarf|${{ hashFiles('.tool-versions') }}"
+        key: "zarf|${{ inputs.zarf_version }}"
 
     - name: Init docker cache
       id: init-docker-cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/docker"
-        key: "docker|${{ hashFiles('.env') }}"
+        key: "docker|${{ inputs.buildharness_version }}"
 
     - name: Docker save build harness
       if: steps.init-docker-cache.outputs.cache-hit != 'true'
@@ -87,27 +99,89 @@ runs:
       run: |
         make docker-load-build-harness
 
-    - name: Get Terraform version from .tool-versions
-      id: get_tf_version
-      shell: bash -e -o pipefail {0}
-      run: echo "tf_version=$(grep 'terraform ' .tool-versions)" >> $GITHUB_OUTPUT
-
     - name: Init Terraform Cache
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/.terraform.d/plugin-cache"
-        key: "${{ runner.os }}-terraform-plugins|${{ steps.get_tf_version.outputs.tf_version }}|${{ hashFiles('examples/complete/providers.tf') }}"
+        key: "${{ runner.os }}-terraform-plugins|${{ inputs.terraform_version }}|${{ hashFiles('examples/complete/providers.tf') }}"
 
     - name: Update files with automatic formatting tools
       shell: bash -e -o pipefail {0}
       run: |
-        # Make it always return 0 since changing files is considered a failure by pre-commit
-        make autoformat fix-cache-permissions || true
+        make autoformat fix-cache-permissions || make autoformat
 
-    - name: Commit and push changes
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        skip_checkout: true
+      # Use the GraphQL API to commit changes, so we get automatic commit signing - https://docs.github.com/en/graphql/reference/mutations#commit-signing
+      # The REST contents API can't be used as easily because it only supports making single file commits
+    - name: Commit updated files
+      shell: bash -e -o pipefail {0}
+      env:
+        GITHUB_TOKEN: ${{ steps.get_installation_token.outputs.token || github.token }}
+      run: |
+        # Initialize empty arrays for storing filenames that are added or removed
+        additions=()
+        removed=()
+
+        # Read the git status output and categorize files as added or removed
+        while IFS= read -r -d $'\0' status_line; do
+            filename="${status_line:3}"
+            git_status="${status_line:0:2}"
+
+            if [ "$git_status" = "D " ]; then
+                removed+=("$filename")
+            else
+                file_contents=$(base64 -w 0 < "$filename")
+                additions+=("$file_contents,$filename")
+            fi
+        done < <(git status --porcelain=v1 -z)
+
+        # If there are no additions, exit the script
+        if [ "${#additions[@]}" -eq 0 ]; then
+          echo "No files updated, skipping commit"
+          exit 0
+        fi
+
+        # for now, we ignore $removed files, but they could be handled similarly (it's just harder to send two lists of positional input files into jq)
+        # jq's iteration over inputs will skip over files with 0 lines (empty files)
+
+        commitMessage="chore: automated formatting of files"
+
+        echo "-------------------------"
+        echo
+        echo "GraphQL fileContents and names: $(echo "${additions[@]}" | jq -R -c 'split(" ") | map(split(",") | {contents: .[0], path: .[1]})')"
+        echo
+        echo "-------------------------"
+
+        jq \
+          --raw-input \
+          --null-input \
+          --arg repositoryNameWithOwner "${{ github.event.client_payload.github.payload.repository.full_name || github.event.repository.full_name }}" \
+          --arg branchName "${{ github.event.client_payload.pull_request.head.ref || github.event.pull_request.head.ref || github.ref_name }}" \
+          --arg expectedHeadOid "${{ github.event.client_payload.pull_request.head.sha || github.event.pull_request.head.sha || github.sha }}" \
+          --arg commitMessage "$commitMessage" \
+          --argjson fileContentsAndNames "$(echo "${additions[@]}" | jq -R -c 'split(" ") | map(split(",") | {contents: .[0], path: .[1]})')" \
+          '{
+          "query": "mutation ($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { url } } }",
+          "variables": {
+            "input": {
+              "branch": {
+                "repositoryNameWithOwner": $repositoryNameWithOwner,
+                "branchName": $branchName
+              },
+              "message": {
+                "headline": $commitMessage
+              },
+              "fileChanges": {
+                "additions": $fileContentsAndNames
+              },
+              "expectedHeadOid": $expectedHeadOid
+            }
+          }
+        }' | \
+        curl https://api.github.com/graphql \
+          --silent \
+          --fail-with-body \
+          --oauth2-bearer "$(gh auth token)" \
+          --data @-
 
     # Update GitHub status for successful pipeline run
     - name: "Update GitHub Status for success"

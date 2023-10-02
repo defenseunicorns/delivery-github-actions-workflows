@@ -20,31 +20,22 @@ jobs:
     if: github.event.client_payload.github.actor == 'renovate[bot]' || github.actor == 'renovate[bot]'
     runs-on: ubuntu-latest
     steps:
-
-      - name: Get token
-        id: get_installation_token
-        uses: peter-murray/workflow-application-token-action@v2
-        if: ${{ !env.TOKEN }}
+      - name: Get buildharness software versions
+        id: buildharness-software-versions
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/get-buildharness-software-versions@main
         with:
-          application_id: ${{ secrets.NARWHAL_BOT_APP_ID }}
-          application_private_key: ${{ secrets.NARWHAL_BOT_SECRET }}
-        env:
-          TOKEN: ${{ secrets.TOKEN }}
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
 
       - name: Autoformat
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@main
         with:
-          token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
           github-context: "update / autoformat"
-
-      - name: Wait 5 seconds
-        run: sleep 5
-
-      - name: Create comment
-        uses: peter-evans/create-or-update-comment@v3
-        with:
-          token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
-          repository: ${{ github.repository }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            /test all
+          buildharness_version: ${{ steps.buildharness-software-versions.outputs.buildharness_version }}
+          golang_version: ${{ steps.buildharness-software-versions.outputs.golang_version }}
+          terraform_version: ${{ steps.buildharness-software-versions.outputs.terraform_version }}
+          zarf_version: ${{ steps.buildharness-software-versions.outputs.zarf_version }}

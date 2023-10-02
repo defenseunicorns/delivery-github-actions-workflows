@@ -27,6 +27,13 @@ jobs:
       matrix:
         check-type: ${{ fromJSON(inputs.check-types) }}
     steps:
+      - name: Get buildharness software versions
+        id: buildharness-software-versions
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/get-buildharness-software-versions@main
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
 
       - name: pre-commit
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
@@ -35,3 +42,5 @@ jobs:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           token: ${{ secrets.TOKEN }}
+          buildharness_version: ${{ steps.buildharness-software-versions.outputs.buildharness_version }}
+          golang_version: ${{ steps.buildharness-software-versions.outputs.golang_version }}
