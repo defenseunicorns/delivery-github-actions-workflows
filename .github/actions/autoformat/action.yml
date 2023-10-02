@@ -129,7 +129,7 @@ runs:
             if [ "$git_status" = "D " ]; then
                 removed+=("$filename")
             else
-                file_contents=$(base64 < "$filename")
+                file_contents=$(base64 -w 0 < "$filename")
                 additions+=("$file_contents,$filename")
             fi
         done < <(git status --porcelain=v1 -z)
@@ -144,6 +144,12 @@ runs:
         # jq's iteration over inputs will skip over files with 0 lines (empty files)
 
         commitMessage="chore: automated formatting of files"
+
+        echo "-------------------------"
+        echo
+        echo "GraphQL fileContents and names: $(echo "${additions[@]}" | jq -R -c 'split(" ") | map(split(",") | {contents: .[0], path: .[1]})')"
+        echo
+        echo "-------------------------"
 
         jq \
           --raw-input \
