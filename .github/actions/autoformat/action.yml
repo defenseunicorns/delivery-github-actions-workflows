@@ -145,11 +145,11 @@ runs:
 
         commitMessage="chore: automated formatting of files"
 
-        echo "Debugging additions: ${additions[@]}"
-        echo
         echo "-------------------------"
         echo
-        echo "debugging fileContents and names $(echo "${additions[@]}" | jq -R -c 'split(" ") | map(split(",") | {contents: .[0], path: .[1]})')"
+        echo "GraphQL fileContents and names: $(echo "${additions[@]}" | jq -R -c 'split(" ") | map(split(",") | {contents: .[0], path: .[1]})')"
+        echo
+        echo "-------------------------"
 
         jq \
           --raw-input \
