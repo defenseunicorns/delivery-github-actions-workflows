@@ -42,7 +42,7 @@ jobs:
           delete_branch_on_merge: true
           allow_update_branch: false
           squash_merge_commit_title: "PR_TITLE"
-          squash_merge_commit_message: "PR_BODY"
+          squash_merge_commit_message: "BLANK"
           web_commit_signoff_required: true
         env:
           GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
@@ -54,7 +54,7 @@ jobs:
           #build required status checks
           BODY=$(
           yq -e -o json <<EOF | jq -c
-          required_status_checks
+          required_status_checks:
             strict: true
             checks:
               - context: 'pre-commit / pre-commit-checks (common)'
