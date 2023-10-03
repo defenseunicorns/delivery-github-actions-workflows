@@ -53,7 +53,8 @@ jobs:
         shell: bash -e -o pipefail {0}
         run: |
           #build required status checks
-          BODY="$(yq -e -o json <<'EOF' | jq -c
+          BODY=$(
+          yq -e -o json <<EOF | jq -c
           required_status_checks
             strict: true
             checks:
@@ -75,7 +76,8 @@ jobs:
               require_code_owner_reviews: true
               required_approving_review_count: 1
               require_last_push_approval: false
-          EOF)"
+          EOF
+          )
 
           #create body
           echo BODY="$BODY" >> $GITHUB_OUTPUT
