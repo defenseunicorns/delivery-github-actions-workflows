@@ -43,7 +43,6 @@ jobs:
           allow_update_branch: false
           squash_merge_commit_title: "PR_TITLE"
           squash_merge_commit_message: "PR_BODY"
-          allow_forking: true
           web_commit_signoff_required: true
         env:
           GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
