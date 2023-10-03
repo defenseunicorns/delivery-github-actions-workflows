@@ -69,7 +69,7 @@ jobs:
                 app_id: -1
               - context: 'test / e2e-commercial-insecure'
                 app_id: -1
-              - context: 'test / e2e-govcloud-secure
+              - context: 'test / e2e-govcloud-secure'
                 app_id: -1
         env:
           GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
