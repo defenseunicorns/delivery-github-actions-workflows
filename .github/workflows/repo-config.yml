@@ -1,0 +1,78 @@
+name: repo-config
+
+on:
+  workflow_call:
+    secrets:
+      TOKEN:
+        description: "GitHub App Token"
+        required: false
+      APPLICATION_ID:
+        description: "The GitHub App ID"
+        required: false
+      APPLICATION_PRIVATE_KEY:
+        description: "The GitHub App Private Key"
+        required: false
+
+jobs:
+  repo-config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get token
+        id: get_installation_token
+        uses: peter-murray/workflow-application-token-action@v2
+        if: ${{ !env.TOKEN }}
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          organization: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Configure Repository settings
+        id: configure-repository-settings
+        uses: octokit/request-action@v2.x
+        with:
+          route: PATCH /repos/{owner}/{repo}
+          owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
+          repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
+          allow_squash_merge: true
+          allow_merge_commit: false
+          allow_rebase_merge: false
+          allow_auto_merge: true
+          delete_branch_on_merge: true
+          allow_update_branch: false
+          squash_merge_commit_title: "PR_TITLE"
+          squash_merge_commit_message: "PR_BODY"
+          allow_forking: true
+          web_commit_signoff_required: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
+
+      - name: Configure Branch protection rules
+        id: configure-branch-protection-rules
+        uses: octokit/request-action@v2.x
+        with:
+          route: PUT /repos/{owner}/{repo}/branches/{branch}/protection
+          owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
+          repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
+          branch: "ci/dont-use-allstar"
+          required_status_checks:
+            strict: true
+            checks:
+              - context: 'pre-commit / pre-commit-checks (common)'
+                app_id: -1
+              - context: 'pre-commit / pre-commit-checks (golang)'
+                app_id: -1
+              - context: 'pre-commit / pre-commit-checks (renovate)'
+                app_id: -1
+              - context: 'pre-commit / pre-commit-checks (terraform)'
+                app_id: -1
+              - context: 'test / e2e-commercial-insecure'
+                app_id: -1
+              - context: 'test / e2e-govcloud-secure
+                app_id: -1
+        env:
+          GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
+
+
+
