@@ -90,6 +90,8 @@ jobs:
           repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
           branch: "ci/dont-use-allstar"
           body: ${{ steps.create-config-body.outputs.BODY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
 
 
 
