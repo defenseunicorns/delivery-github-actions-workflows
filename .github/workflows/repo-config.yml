@@ -108,14 +108,3 @@ jobs:
           branch: "ci/dont-use-allstar"
         env:
           GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
-
-      - name: Configure code review limits
-        id: configure-code-review-limits
-        uses: octokit/request-action@v2.x
-        with:
-          route: POST {owner}/{repo}/settings/code_review_limits
-          owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
-          repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
-          restrict: 'on'
-        env:
-          GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
