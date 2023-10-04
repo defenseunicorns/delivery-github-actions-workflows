@@ -1,3 +1,4 @@
+# configures repository settings and branch protection rules using octokit/request-action to interact with github's api
 name: repo-config
 
 on:
