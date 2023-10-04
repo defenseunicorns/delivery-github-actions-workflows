@@ -47,7 +47,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
 
-      - name: Create config body
+      - name: Create config json body for complex parameters
         id: create-config-body
         shell: bash -e -o pipefail {0}
         run: |
@@ -92,6 +92,8 @@ jobs:
           required_status_checks: ${{ steps.create-config-body.outputs.REQUIRED_STATUS_CHECKS }}
           enforce_admins: true
           required_pull_request_reviews: ${{ steps.create-config-body.outputs.REQUIRED_PULL_REQUEST_REVIEWS }}
+          required_linear_history: true
           restrictions: 'null'
+          required_conversation_resolution: true
         env:
           GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
