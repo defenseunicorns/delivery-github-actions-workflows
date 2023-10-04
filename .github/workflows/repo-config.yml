@@ -18,24 +18,18 @@ on:
         description: "Branch to configure"
         required: false
         default: "main"
-      checks:
+      checks: #allows status checks to be configurable
         type: string
         description: "YAML formatted required status checks"
         required: false
         default: |-
           checks:
             - context: 'pre-commit / pre-commit-checks (common)'
-              app_id: -1
             - context: 'pre-commit / pre-commit-checks (golang)'
-              app_id: -1
             - context: 'pre-commit / pre-commit-checks (renovate)'
-              app_id: -1
             - context: 'pre-commit / pre-commit-checks (terraform)'
-              app_id: -1
             - context: 'test / e2e-commercial-insecure'
-              app_id: -1
             - context: 'test / e2e-govcloud-secure'
-              app_id: -1
 
 jobs:
   repo-config:
