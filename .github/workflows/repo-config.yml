@@ -94,7 +94,7 @@ jobs:
           route: PUT /repos/{owner}/{repo}/branches/{branch}/protection
           owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
           repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
-          branch: ${{ inputs.branch }}"
+          branch: ${{ inputs.branch }}
           required_status_checks: ${{ steps.create-config-body.outputs.REQUIRED_STATUS_CHECKS }}
           enforce_admins: true
           required_pull_request_reviews: ${{ steps.create-config-body.outputs.REQUIRED_PULL_REQUEST_REVIEWS }}
@@ -111,6 +111,6 @@ jobs:
           route: POST /repos/{owner}/{repo}/branches/{branch}/protection/required_signatures
           owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
           repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
-          branch: ${{ inputs.branch }}"
+          branch: ${{ inputs.branch }}
         env:
           GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
