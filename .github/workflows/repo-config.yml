@@ -117,3 +117,5 @@ jobs:
           owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
           repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
           restrict: 'on'
+        env:
+          GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
