@@ -92,6 +92,6 @@ jobs:
           required_status_checks: ${{ steps.create-config-body.outputs.REQUIRED_STATUS_CHECKS }}
           enforce_admins: true
           required_pull_request_reviews: ${{ steps.create-config-body.outputs.REQUIRED_PULL_REQUEST_REVIEWS }}
-          restrictions: null
+          restrictions: 'null'
         env:
           GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
