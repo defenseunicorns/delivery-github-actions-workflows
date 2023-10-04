@@ -47,98 +47,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
 
-      # - name: Create config body
-      #   id: create-config-body
-      #   shell: bash -e -o pipefail {0}
-      #   run: |
-      #     #build required status checks
-      #     BODY=$(
-      #     yq -e -o json <<EOF | jq -c
-      #     required_status_checks:
-      #       strict: true
-      #       checks:
-      #         - context: 'pre-commit / pre-commit-checks (common)'
-      #           app_id: -1
-      #         - context: 'pre-commit / pre-commit-checks (golang)'
-      #           app_id: -1
-      #         - context: 'pre-commit / pre-commit-checks (renovate)'
-      #           app_id: -1
-      #         - context: 'pre-commit / pre-commit-checks (terraform)'
-      #           app_id: -1
-      #         - context: 'test / e2e-commercial-insecure'
-      #           app_id: -1
-      #         - context: 'test / e2e-govcloud-secure'
-      #           app_id: -1
-      #     enforce_admins: true
-      #     required_pull_request_reviews:
-      #       dismiss_stale_reviews: true
-      #       require_code_owner_reviews: true
-      #       required_approving_review_count: 1
-      #       require_last_push_approval: false
-      #     restrictions: null
-      #     EOF
-      #     )
-
-      #     #create body
-      #     echo BODY="$BODY" >> $GITHUB_OUTPUT
-
-      # - name: Configure Branch protection rules
-      #   id: configure-branch-protection-rules
-      #   uses: octokit/request-action@v2.x
-      #   with:
-      #     route: PUT /repos/{owner}/{repo}/branches/{branch}/protection
-      #     owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
-      #     repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
-      #     branch: "ci/dont-use-allstar"
-      #     body: ${{ steps.create-config-body.outputs.BODY }}
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
-
-      # - name: Create config body
-      #   id: create-config-body
-      #   shell: bash -e -o pipefail {0}
-      #   run: |
-      #     #build required status checks
-      #     BODY=$(
-      #     yq -e -o json <<EOF | jq -c
-      #     required_status_checks:
-      #       strict: true
-      #       checks:
-      #         - context: 'pre-commit / pre-commit-checks (common)'
-      #           app_id: -1
-      #         - context: 'pre-commit / pre-commit-checks (golang)'
-      #           app_id: -1
-      #         - context: 'pre-commit / pre-commit-checks (renovate)'
-      #           app_id: -1
-      #         - context: 'pre-commit / pre-commit-checks (terraform)'
-      #           app_id: -1
-      #         - context: 'test / e2e-commercial-insecure'
-      #           app_id: -1
-      #         - context: 'test / e2e-govcloud-secure'
-      #           app_id: -1
-      #     enforce_admins: true
-      #     required_pull_request_reviews:
-      #       dismiss_stale_reviews: true
-      #       require_code_owner_reviews: true
-      #       required_approving_review_count: 1
-      #       require_last_push_approval: false
-      #     restrictions: null
-      #     EOF
-      #     )
-
-      #     #create body
-      #     echo BODY="$BODY" >> $GITHUB_OUTPUT
-
-      - name: Configure Branch protection rules
-        id: configure-branch-protection-rules
-        uses: octokit/request-action@v2.x
-        with:
-          route: PUT /repos/{owner}/{repo}/branches/{branch}/protection
-          owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
-          repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
-          branch: "ci/dont-use-allstar"
-          required_status_checks: |
-            |
+      - name: Create config body
+        id: create-config-body
+        shell: bash -e -o pipefail {0}
+        run: |
+          #build required status checks
+          BODY=$(
+          yq -e -o json <<EOF | jq -c
+          required_status_checks:
             strict: true
             checks:
               - context: 'pre-commit / pre-commit-checks (common)'
@@ -153,13 +69,29 @@ jobs:
                 app_id: -1
               - context: 'test / e2e-govcloud-secure'
                 app_id: -1
-          enforce_admins: true
-          required_pull_request_reviews: |
-            |
+          required_pull_request_reviews:
             dismiss_stale_reviews: true
             require_code_owner_reviews: true
             required_approving_review_count: 1
             require_last_push_approval: false
+          EOF
+          )
+
+          #create parameters for octokit/request-action
+          echo REQUIRED_STATUS_CHECKS=$(echo $BODY | jq .required_status_checks -c) >> $GITHUB_OUTPUT
+          echo REQUIRED_PULL_REQUEST_REVIEWS=$(echo $BODY | jq .required_pull_request_reviews -c) >> $GITHUB_OUTPUT
+
+      - name: Configure Branch protection rules
+        id: configure-branch-protection-rules
+        uses: octokit/request-action@v2.x
+        with:
+          route: PUT /repos/{owner}/{repo}/branches/{branch}/protection
+          owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
+          repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
+          branch: "ci/dont-use-allstar"
+          required_status_checks: ${{ steps.create-config-body.outputs.REQUIRED_STATUS_CHECKS }}
+          enforce_admins: true
+          required_pull_request_reviews: ${{ steps.create-config-body.outputs.REQUIRED_PULL_REQUEST_REVIEWS }}
           restrictions: null
         env:
           GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
