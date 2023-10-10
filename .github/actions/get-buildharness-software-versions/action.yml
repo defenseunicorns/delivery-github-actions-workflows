@@ -58,3 +58,14 @@ runs:
         echo TF_VERSION=$(grep 'terraform ' <<<"$TOOL_VERSIONS" | awk '{print $2}') >> $GITHUB_OUTPUT
         echo ZARF_VERSION=$(grep 'zarf ' <<<"$TOOL_VERSIONS" | awk '{print $2}') >> $GITHUB_OUTPUT
 
+        echo "output versions for sanity"
+        echo
+        echo "BUILD_HARNESS_VERSION=$BUILD_HARNESS_VERSION"
+        echo
+        echo "TOOL_VERSIONS=$TOOL_VERSIONS"
+        echo
+        echo "GOLANG_VERSION=$GOLANG_VERSION"
+        echo
+        echo "TF_VERSION=$TF_VERSION"
+        echo
+        echo "ZARF_VERSION=$ZARF_VERSION"
