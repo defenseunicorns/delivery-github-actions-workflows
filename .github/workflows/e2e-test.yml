@@ -79,6 +79,22 @@ jobs:
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           token: ${{ secrets.TOKEN }}
 
+  matrix_debug:
+    runs-on: ubuntu-latest
+    if: inputs.e2e-test-matrix != null
+    strategy:
+      matrix:
+        include: ${{ fromJSON(inputs.e2e-test-matrix) }}
+    steps:
+    - name: Check
+      env:
+        MATRIX: ${{ toJSON(matrix) }}
+      run: |
+        echo "MATRIX: $(jq -r -c '.' <<< "$MATRIX")"
+        echo "PROJECT: [$PROJECT]"
+        echo "CONFIG: [$CONFIG]"
+        echo "NESTED: [$NESTED]"
+
   # Run the E2E insecure tests on the commercial account
   # e2e-test:
   #   runs-on: ubuntu-latest
