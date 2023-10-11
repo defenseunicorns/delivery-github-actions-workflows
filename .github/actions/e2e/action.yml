@@ -47,7 +47,6 @@ inputs:
 runs:
   using: composite
   steps:
-
     - name: Get token
       id: get_installation_token
       uses: peter-murray/workflow-application-token-action@v2
