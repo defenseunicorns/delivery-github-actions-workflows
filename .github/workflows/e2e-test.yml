@@ -26,51 +26,46 @@ on:
         description: "make target and region to run e2e tests on, must be json formatted"
         type: string
         required: false
+      e2e-required-status-check:
+        description: "status check to report when e2e tests are complete"
+        type: string
+        required: false
+        default: "e2e-test"
 
 jobs:
-  # Update the comment that triggered the /test command to show the run url
-  # comment:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Update Comment
-  #       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
-  #       with:
-  #         application_id: ${{ secrets.APPLICATION_ID }}
-  #         application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-  #         token: ${{ secrets.TOKEN }}
-
-  # get-buildharness-software-versions:
-  #   runs-on: ubuntu-latest
-  #   if: inputs.e2e-test-matrix != null
-  #   outputs:
-  #     buildharness_version: ${{ steps.buildharness_software_versions.outputs.buildharness_version }}
-  #     golang_version: ${{ steps.buildharness_software_versions.outputs.golang_version }}
-  #     terraform_version: ${{ steps.buildharness_software_versions.outputs.terraform_version }}
-  #     zarf_version: ${{ steps.buildharness_software_versions.outputs.zarf_version }}
-  #   steps:
-  #     - name: Get buildharness software versions
-  #       id: buildharness_software_versions
-  #       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/get-buildharness-software-versions@main
-  #       with:
-  #         application_id: ${{ secrets.APPLICATION_ID }}
-  #         application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-  #         token: ${{ secrets.TOKEN }}
-
-  # Do a simple ping/pong status update to validate things are working, only triggered when sourced from repository_dispatch events
-  ping:
+  # Update the comment that triggered the /test command to show the run url if this is a repository_dispatch event
+  comment:
     runs-on: ubuntu-latest
-    if: contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping')
+    if: github.event_name == 'repository_dispatch'
     steps:
-      - name: Ping Test
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@ci/make-e2e-test-accept-arbitrary-targets
+      - name: Update Comment
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           token: ${{ secrets.TOKEN }}
 
-  matrix_ping:
+  get-buildharness-software-versions:
     runs-on: ubuntu-latest
     if: inputs.e2e-test-matrix != null
+    outputs:
+      buildharness_version: ${{ steps.buildharness_software_versions.outputs.buildharness_version }}
+      golang_version: ${{ steps.buildharness_software_versions.outputs.golang_version }}
+      terraform_version: ${{ steps.buildharness_software_versions.outputs.terraform_version }}
+      zarf_version: ${{ steps.buildharness_software_versions.outputs.zarf_version }}
+    steps:
+      - name: Get buildharness software versions
+        id: buildharness_software_versions
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/get-buildharness-software-versions@main
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
+
+  # Do a simple ping/pong status update to validate things are working, only triggered when sourced from repository_dispatch events
+  ping:
+    runs-on: ubuntu-latest
+    if: contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping')
     steps:
       - name: Ping Test
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@ci/make-e2e-test-accept-arbitrary-targets
@@ -91,79 +86,39 @@ jobs:
         MATRIX: ${{ toJSON(matrix) }}
       run: |
         echo "MATRIX: $(jq -r -c '.' <<< "$MATRIX")"
-        echo "PROJECT: [$PROJECT]"
-        echo "CONFIG: [$CONFIG]"
-        echo "NESTED: [$NESTED]"
 
-  # Run the E2E insecure tests on the commercial account
-  # e2e-test:
-  #   runs-on: ubuntu-latest
-  #   if: inputs.e2e-test-matrix != null
-  #   needs:
-  #     - get-buildharness-software-versions
-  #   strategy:
-  #     matrix:
-  #       e2e-test: ${{ fromJSON(inputs.e2e-test-matrix) }}
-  #   steps:
-  #     - name: Run E2E Tests
-  #       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@ci/make-e2e-test-accept-arbitrary-targets
-  #       with:
-  #         application_id: ${{ secrets.APPLICATION_ID }}
-  #         application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-  #         token: ${{ secrets.TOKEN }}
-  #         buildharness_version: ${{ needs.get-buildharness-software-versions.outputs.buildharness_version }}
-  #         golang_version: ${{ needs.get-buildharness-software-versions.outputs.golang_version }}
-  #         terraform_version: ${{ needs.get-buildharness-software-versions.outputs.terraform_version }}
-  #         zarf_version: ${{ needs.get-buildharness-software-versions.outputs.zarf_version }}
-  #         region: ${{ matrix.e2e-test.region }}
-  #         github-context: "make / ${{ matrix.e2e-test.make-target }}"
-  #         make-target: ${{ matrix.e2e-test.make-target }}
-  #         role-to-assume: ${{ contains(matrix.e2e-test.region, 'gov') && secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME || secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }} #determines which role to assume based on region name
+  # Run the E2E tests in a matrix of regions and make targets looping through the array provided
+  e2e-test:
+    runs-on: ubuntu-latest
+    if: inputs.e2e-test-matrix != null
+    needs: get-buildharness-software-versions
+    strategy:
+      matrix:
+        include: ${{ fromJSON(inputs.e2e-test-matrix) }}
+    steps:
+      - name: Run E2E Tests
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@ci/make-e2e-test-accept-arbitrary-targets
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
+          buildharness_version: ${{ needs.get-buildharness-software-versions.outputs.buildharness_version }}
+          golang_version: ${{ needs.get-buildharness-software-versions.outputs.golang_version }}
+          terraform_version: ${{ needs.get-buildharness-software-versions.outputs.terraform_version }}
+          zarf_version: ${{ needs.get-buildharness-software-versions.outputs.zarf_version }}
+          region: ${{ matrix.region }}
+          github-context: "make / ${{ matrix.make-target }}"
+          make-target: ${{ matrix.make-target }}
+          role-to-assume: ${{ contains(matrix.region, 'gov') && secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME || secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }} #determines which role to assume based on region name
 
-  # # Run the E2E insecure tests on the commercial account
-  # e2e-commercial-insecure:
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     # - parse
-  #     - get-buildharness-software-versions
-  #   if: needs.parse.outputs.run-e2e-commercial-insecure == 'true'
-  #   steps:
-  #     - name: Run E2E Tests
-  #       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
-  #       with:
-  #         application_id: ${{ secrets.APPLICATION_ID }}
-  #         application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-  #         token: ${{ secrets.TOKEN }}
-  #         role-to-assume: ${{ secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }}
-  #         region: us-east-2
-  #         github-context: "test / e2e-commercial-insecure"
-  #         test-to-run: "insecure"
-  #         buildharness_version: ${{ needs.get-buildharness-software-versions.outputs.buildharness_version }}
-  #         golang_version: ${{ needs.get-buildharness-software-versions.outputs.golang_version }}
-  #         terraform_version: ${{ needs.get-buildharness-software-versions.outputs.terraform_version }}
-  #         zarf_version: ${{ needs.get-buildharness-software-versions.outputs.zarf_version }}
-
-
-  # # Run the E2E secure tests on the govcloud account
-  # e2e-govcloud-secure:
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - parse
-  #     - get-buildharness-software-versions
-  #   if: needs.parse.outputs.run-e2e-govcloud-secure == 'true'
-  #   steps:
-  #     - name: Run E2E Tests
-  #       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
-  #       with:
-  #         application_id: ${{ secrets.APPLICATION_ID }}
-  #         application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-  #         token: ${{ secrets.TOKEN }}
-  #         role-to-assume: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
-  #         region: us-gov-east-1
-  #         github-context: "test / e2e-govcloud-secure"
-  #         test-to-run: "secure"
-  #         buildharness_version: ${{ needs.get-buildharness-software-versions.outputs.buildharness_version }}
-  #         golang_version: ${{ needs.get-buildharness-software-versions.outputs.golang_version }}
-  #         terraform_version: ${{ needs.get-buildharness-software-versions.outputs.terraform_version }}
-  #         zarf_version: ${{ needs.get-buildharness-software-versions.outputs.zarf_version }}
-
+  # Update the required status check to success if all e2e tests passed
+  report-success-status:
+    uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/report-status.yml@main
+    needs: e2e-test
+    secrets:
+      APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
+      APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+    with:
+      status-checks: '["e2e-tests"]'
+      description: "E2E tests"
+      status: ${{ needs.e2e-test.result == 'cancelled' && 'error' || needs.e2e-test.result }}
