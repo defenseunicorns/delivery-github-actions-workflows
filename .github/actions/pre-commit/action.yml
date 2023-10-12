@@ -50,12 +50,14 @@ runs:
 
     - name: Init gopath cache
       uses: actions/cache@v3
+      if: contains(inputs.check-type,'golang')
       with:
         path: "${{ github.workspace }}/.cache/go"
         key: "gopath|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
 
     - name: Init gobuild cache
       uses: actions/cache@v3
+      if: contains(inputs.check-type,'golang')
       with:
         path: "${{ github.workspace }}/.cache/go-build"
         key: "gobuild|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
@@ -78,6 +80,6 @@ runs:
       run: |
         make docker-load-build-harness
 
-    - name: Run `pre-commit run -a`
+    - name: Run `pre-commit check`
       shell: bash -e -o pipefail {0}
-      run: "make pre-commit-${{inputs.check-type}} fix-cache-permissions"
+      run: "make ${{ inputs.check-type }} fix-cache-permissions"

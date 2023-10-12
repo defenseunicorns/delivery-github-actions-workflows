@@ -21,20 +21,44 @@ on:
         default: '["common", "terraform", "golang", "renovate"]' #json matrix
 
 jobs:
-  pre-commit-checks:
+  set-test-vars:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        check-type: ${{ fromJSON(inputs.check-types) }}
+    outputs:
+      pre-commit-test-matrix: ${{ steps.set_test_vars.outputs.pre-commit-test-matrix }}
+    steps:
+      - name: Set Vars
+        id: set_test_vars
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/set-test-vars@ci/make-e2e-test-accept-arbitrary-targets
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
+
+  get-buildharness-software-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      buildharness_version: ${{ steps.buildharness_software_versions.outputs.buildharness_version }}
+      golang_version: ${{ steps.buildharness_software_versions.outputs.golang_version }}
+      terraform_version: ${{ steps.buildharness_software_versions.outputs.terraform_version }}
+      zarf_version: ${{ steps.buildharness_software_versions.outputs.zarf_version }}
     steps:
       - name: Get buildharness software versions
-        id: buildharness-software-versions
+        id: buildharness_software_versions
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/get-buildharness-software-versions@main
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           token: ${{ secrets.TOKEN }}
 
+  pre-commit-checks:
+    runs-on: ubuntu-latest
+    needs:
+      - set-test-vars
+      - get-buildharness-software-versions
+    strategy:
+      matrix:
+        check-type: ${{ fromJSON(needs.set-test-vars.outputs.pre-commit-test-matrix) }}
+    steps:
       - name: pre-commit
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
@@ -42,5 +66,5 @@ jobs:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           token: ${{ secrets.TOKEN }}
-          buildharness_version: ${{ steps.buildharness-software-versions.outputs.buildharness_version }}
-          golang_version: ${{ steps.buildharness-software-versions.outputs.golang_version }}
+          buildharness_version: ${{ needs.get-buildharness-software-versions.outputs.buildharness_version }}
+          golang_version: ${{ needs.get-buildharness-software-versions.outputs.golang_version }}
