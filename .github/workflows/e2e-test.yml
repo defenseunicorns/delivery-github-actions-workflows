@@ -34,7 +34,7 @@ on:
         description: "debug mode"
         type: boolean
         required: false
-        default: true
+        default: false
 
 jobs:
   # If the e2e-test-matrix input is not provided, then we need to build the e2e test matrix from available make targets
