@@ -34,10 +34,10 @@ on:
         description: "debug mode"
         type: boolean
         required: false
-        default: false
+        default: true
 
 jobs:
-  # If the e2e-test-matrix input is not provided, then we need to build the e2e test matrix from available make targets
+  # Build e2e test matrix from available make targets in the repo
   set-test-vars:
     runs-on: ubuntu-latest
     if: ${{ ! (github.event_name == 'repository_dispatch' && contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping')) }}
