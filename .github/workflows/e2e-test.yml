@@ -46,7 +46,7 @@ jobs:
     steps:
       - name: Set Vars
         id: set_test_vars
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/set-e2e-vars@ci/make-e2e-test-accept-arbitrary-targets
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/set-test-vars@ci/make-e2e-test-accept-arbitrary-targets
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
