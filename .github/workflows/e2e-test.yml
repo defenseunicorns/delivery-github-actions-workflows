@@ -102,9 +102,9 @@ jobs:
     - id: set_matrix
       run: |
         if [[ "${{ inputs.e2e-test-matrix }}" != "" ]]; then
-          echo "E2E_TEST_MATRIX=${{ inputs.e2e-test-matrix }}" >> $GITHUB_OUTPUT
+          echo "E2E_TEST_MATRIX='${{ inputs.e2e-test-matrix }}'" >> $GITHUB_OUTPUT
         else
-          echo "E2E_TEST_MATRIX=${{ needs.set-test-vars.outputs.e2e-test-matrix }}" >> $GITHUB_OUTPUT
+          echo "E2E_TEST_MATRIX='${{ needs.set-test-vars.outputs.e2e-test-matrix }}'" >> $GITHUB_OUTPUT
         fi
 
   input_matrix_debug:
