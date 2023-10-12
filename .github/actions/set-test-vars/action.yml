@@ -64,7 +64,7 @@ runs:
             # Create a JSON object for the current target and region
             json_object="{\"make-target\":\"$target\", \"region\":\"$region\"}"
             # Add the JSON object to the JSON array
-            CI_TEST_MAKE_TARGETS=$(echo $CI_TEST_MAKE_TARGETS | jq --argjson obj "$json_object" '. + [$obj]')
+            CI_TEST_MAKE_TARGETS=$(echo $CI_TEST_MAKE_TARGETS | jq -c --argjson obj "$json_object" '. + [$obj]')
         done < <(grep -o "^ci-test-[^:]*" Makefile)
         echo "found ci-test make targets: $CI_TEST_MAKE_TARGETS"
         echo "CI_TEST_MAKE_TARGETS=$CI_TEST_MAKE_TARGETS" >> $GITHUB_OUTPUT
