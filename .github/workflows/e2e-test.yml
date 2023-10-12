@@ -34,7 +34,7 @@ on:
         description: "debug mode"
         type: boolean
         required: false
-        default: true
+        default: false
 
 jobs:
   # Build e2e test matrix from available make targets in the repo
