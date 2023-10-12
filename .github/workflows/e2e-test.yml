@@ -40,7 +40,7 @@ jobs:
   # If the e2e-test-matrix input is not provided, then we need to build the e2e test matrix from available make targets
   set-test-vars:
     runs-on: ubuntu-latest
-    if: ! (github.event_name == 'repository_dispatch' && contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping'))
+    if: ${{ ! (github.event_name == 'repository_dispatch' && contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping')) }}
     outputs:
       e2e-test-matrix: ${{ steps.set_test_vars.outputs.e2e-test-matrix }}
     steps:
@@ -66,7 +66,7 @@ jobs:
 
   get-buildharness-software-versions:
     runs-on: ubuntu-latest
-    if: ! (github.event_name == 'repository_dispatch' && contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping'))
+    if: ${{ ! (github.event_name == 'repository_dispatch' && contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping')) }}
     outputs:
       buildharness_version: ${{ steps.buildharness_software_versions.outputs.buildharness_version }}
       golang_version: ${{ steps.buildharness_software_versions.outputs.golang_version }}
