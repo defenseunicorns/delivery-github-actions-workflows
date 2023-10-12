@@ -13,14 +13,8 @@ on:
         description: "The GitHub App Private Key"
         required: false
 
-    inputs:
-      check-types:
-        description: "List of check types to run"
-        type: string
-        required: false
-        default: '["common", "terraform", "golang", "renovate"]' #json matrix
-
 jobs:
+  # This job is used to set the test matrix for the pre-commit checks, fetches pre-commit targets from the makefile
   set-test-vars:
     runs-on: ubuntu-latest
     outputs:
