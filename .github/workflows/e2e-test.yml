@@ -20,8 +20,7 @@ on:
         required: true
 
     inputs:
-      #json matrix for multiple make targets, will fire multiple parallel jobs for e2e test. Overridable by inputting in caller workflow
-      # example: '[{"make-target": "test-complete-insecure", "region": "us-east-2"}, {"make-target": "test-complete-secure", "region": "us-gov-east-1"}]'
+      # this workflow will use this input first, else will build its own e2e-test-matrix and do all e2e tests
       e2e-test-matrix:
         description: "make target and region to run e2e tests on, must be json formatted"
         type: string
@@ -30,10 +29,30 @@ on:
         description: "status check to report when e2e tests are complete"
         type: string
         required: false
-        default: "e2e-test"
+        default: '["e2e-tests"]'
+      debug:
+        description: "debug mode"
+        type: boolean
+        required: false
+        default: true
 
 jobs:
-  # Update the comment that triggered the /test command to show the run url if this is a repository_dispatch event
+  # If the e2e-test-matrix input is not provided, then we need to build the e2e test matrix from available make targets
+  set-test-vars:
+    runs-on: ubuntu-latest
+    if: ! (github.event_name == 'repository_dispatch' && contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping'))
+    outputs:
+      e2e-test-matrix: ${{ steps.set_test_vars.outputs.e2e-test-matrix }}
+    steps:
+      - name: Set Vars
+        id: set_test_vars
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/set-e2e-vars@ci/make-e2e-test-accept-arbitrary-targets
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
+
+  # Update the comment that triggered the /test command to show the run url. Only runs if this is called by repository_dispatch event
   comment:
     runs-on: ubuntu-latest
     if: github.event_name == 'repository_dispatch'
@@ -47,7 +66,7 @@ jobs:
 
   get-buildharness-software-versions:
     runs-on: ubuntu-latest
-    if: inputs.e2e-test-matrix != null
+    if: ! (github.event_name == 'repository_dispatch' && contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping'))
     outputs:
       buildharness_version: ${{ steps.buildharness_software_versions.outputs.buildharness_version }}
       golang_version: ${{ steps.buildharness_software_versions.outputs.golang_version }}
@@ -65,7 +84,7 @@ jobs:
   # Do a simple ping/pong status update to validate things are working, only triggered when sourced from repository_dispatch events
   ping:
     runs-on: ubuntu-latest
-    if: contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping')
+    if: github.event_name == 'repository_dispatch' && contains(github.event.client_payload.slash_command.args.unnamed.all, 'ping')
     steps:
       - name: Ping Test
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@ci/make-e2e-test-accept-arbitrary-targets
@@ -74,12 +93,13 @@ jobs:
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           token: ${{ secrets.TOKEN }}
 
-  matrix_debug:
+  input_matrix_debug:
     runs-on: ubuntu-latest
-    if: inputs.e2e-test-matrix != null
+    needs: set-test-vars
+    if: inputs.debug
     strategy:
       matrix:
-        include: ${{ fromJSON(inputs.e2e-test-matrix) }}
+        include: ${{ fromJSON(inputs.e2e-test-matrix) || fromJSON(needs.set-test-vars.outputs.e2e-test-matrix) }}
     steps:
     - name: Check
       env:
@@ -87,14 +107,16 @@ jobs:
       run: |
         echo "MATRIX: $(jq -r -c '.' <<< "$MATRIX")"
 
-  # Run the E2E tests in a matrix of regions and make targets looping through the array provided
+  # Run the E2E tests in a matrix of regions and make targets looping through the array
+  # If inputs.e2e-test-matrix is provided, then we will use that matrix instead of using the one targeting all regions and matching make targets
   e2e-test:
     runs-on: ubuntu-latest
-    if: inputs.e2e-test-matrix != null
-    needs: get-buildharness-software-versions
+    needs:
+      - get-buildharness-software-versions
+      - set-test-vars
     strategy:
       matrix:
-        include: ${{ fromJSON(inputs.e2e-test-matrix) }}
+        include: ${{ fromJSON(inputs.e2e-test-matrix) || fromJSON(needs.set-test-vars.outputs.e2e-test-matrix) }}
     steps:
       - name: Run E2E Tests
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@ci/make-e2e-test-accept-arbitrary-targets
@@ -109,16 +131,16 @@ jobs:
           region: ${{ matrix.region }}
           github-context: "make / ${{ matrix.make-target }}"
           make-target: ${{ matrix.make-target }}
-          role-to-assume: ${{ contains(matrix.region, 'gov') && secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME || secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }} #determines which role to assume based on region name
+          role-to-assume: ${{ startsWith(matrix.region, 'us-gov') && secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME || secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }} #determines which role to assume based on region name in matrix iteration
 
   # Update the required status check to success if all e2e tests passed
-  report-success-status:
+  report-e2e-test-status:
     uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/report-status.yml@main
     needs: e2e-test
     secrets:
       APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
       APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
     with:
-      status-checks: '["e2e-tests"]'
+      status-checks: ${{ inputs.e2e-required-status-check }}
       description: "E2E tests"
       status: ${{ needs.e2e-test.result == 'cancelled' && 'error' || needs.e2e-test.result }}

@@ -1,0 +1,75 @@
+name: set test vars
+
+description: This action sets the environment variables needed to run the e2e tests
+
+inputs:
+  # either pass in a token, or an app id and private key, only needed for private repos
+  token:
+    description: 'The GitHub token to use for authentication'
+    required: false
+  application_id:
+    description: 'The GitHub App ID'
+    required: false
+  application_private_key:
+    description: 'The GitHub App private key'
+    required: false
+  e2e-test-matrix:
+    description: 'The matrix of e2e tests to run'
+    required: true
+
+outputs:
+  e2e-test-matrix:
+    description: The matrix of e2e tests to run
+    value: ${{ steps.set-vars.outputs.CI_TEST_MAKE_TARGETS }}
+  pre-commit-test-matrix:
+    description: The matrix of pre-commit tests to run
+    value: ${{ steps.set-vars.outputs.PRE_COMMIT_MAKE_TARGETS }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get token
+      id: get_installation_token
+      uses: peter-murray/workflow-application-token-action@v2
+      if: ${{ !inputs.token }}
+      with:
+        application_id: ${{ inputs.application_id }}
+        application_private_key: ${{ inputs.application_private_key }}
+
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
+        repository: ${{ github.event.client_payload.pull_request.head.repo.full_name || github.repository }}
+        ref: ${{ github.event.client_payload.pull_request.head.ref || github.ref }}
+
+    - name: set vars
+      shell: bash -e -o pipefail {0}
+      id: set-vars
+      run: |
+        # get make targets starting with the string 'ci-test-' and output them as a json array with region located in the make target
+
+        # Function to extract TF_VAR_region value from a make target
+        get_region() {
+            local target=$1
+            grep -A1 "^$target:" Makefile | grep -o "TF_VAR_region='[^']*'" | cut -d"'" -f2
+        }
+
+        # Initiate an empty JSON array
+        CI_TEST_MAKE_TARGETS='[]'
+
+        # Get the ci-test- targets and their regions
+        while IFS= read -r target; do
+            region=$(get_region "$target")
+            # Create a JSON object for the current target and region
+            json_object="{\"make-target\":\"$target\", \"region\":\"$region\"}"
+            # Add the JSON object to the JSON array
+            CI_TEST_MAKE_TARGETS=$(echo $CI_TEST_MAKE_TARGETS | jq --argjson obj "$json_object" '. + [$obj]')
+        done < <(grep -o "^ci-test-[^:]*" Makefile)
+        echo "found ci-test make targets: $CI_TEST_MAKE_TARGETS"
+        echo "CI_TEST_MAKE_TARGETS=$CI_TEST_MAKE_TARGETS" >> $GITHUB_OUTPUT
+
+        # get make targets starting with the string 'pre-commit-' and output them as a json array, ignoring pre-commit-all specifically
+        PRE_COMMIT_MAKE_TARGETS=$(make help | grep 'pre-commit-' | grep -v 'pre-commit-all' | awk '{print $2}' | jq -R -s -c 'split("\n")[:-1]')
+        echo "(excluding "all") found pre-commit make targets: $PRE_COMMIT_MAKE_TARGETS"
+        echo "PRE_COMMIT_MAKE_TARGETS=$PRE_COMMIT_MAKE_TARGETS" >> $GITHUB_OUTPUT
