@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Set Vars
         id: set_test_vars
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/set-test-vars@ci/make-e2e-test-accept-arbitrary-targets
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/set-test-vars@main
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
@@ -54,7 +54,7 @@ jobs:
         check-type: ${{ fromJSON(needs.set-test-vars.outputs.pre-commit-test-matrix) }}
     steps:
       - name: pre-commit
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@ci/make-e2e-test-accept-arbitrary-targets
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
         with:
           check-type: ${{ matrix.check-type }}
           application_id: ${{ secrets.APPLICATION_ID }}
