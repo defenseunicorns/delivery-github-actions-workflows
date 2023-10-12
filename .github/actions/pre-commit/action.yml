@@ -46,7 +46,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: "${{ github.workspace }}/.cache/pre-commit"
-        key: "pre-commit-${{inputs.check-type}}|${{hashFiles('.pre-commit-config.yaml')}}"
+        key: "${{inputs.check-type}}|${{hashFiles('.pre-commit-config.yaml')}}"
 
     - name: Init gopath cache
       uses: actions/cache@v3
