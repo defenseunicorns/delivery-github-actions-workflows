@@ -13,9 +13,6 @@ inputs:
   application_private_key:
     description: 'The GitHub App private key'
     required: false
-  e2e-test-matrix:
-    description: 'The matrix of e2e tests to run'
-    required: true
 
 outputs:
   e2e-test-matrix:
