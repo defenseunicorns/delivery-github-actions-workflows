@@ -54,7 +54,7 @@ jobs:
         check-type: ${{ fromJSON(needs.set-test-vars.outputs.pre-commit-test-matrix) }}
     steps:
       - name: pre-commit
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/pre-commit@ci/make-e2e-test-accept-arbitrary-targets
         with:
           check-type: ${{ matrix.check-type }}
           application_id: ${{ secrets.APPLICATION_ID }}
