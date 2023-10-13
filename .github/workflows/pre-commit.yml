@@ -13,6 +13,13 @@ on:
         description: "The GitHub App Private Key"
         required: false
 
+    inputs:
+      pre-commit-required-status-check:
+        description: "The status check that must pass before"
+        type: string
+        required: false
+        default: '["pre-commit-checks"]'
+
 jobs:
   # This job is used to set the test matrix for the pre-commit checks, fetches pre-commit targets from the makefile
   set-test-vars:
@@ -62,3 +69,14 @@ jobs:
           token: ${{ secrets.TOKEN }}
           buildharness_version: ${{ needs.get-buildharness-software-versions.outputs.buildharness_version }}
           golang_version: ${{ needs.get-buildharness-software-versions.outputs.golang_version }}
+
+  report-pre-commit-test-status:
+    uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/report-status.yml@main
+    needs: pre-commit-checks
+    secrets:
+      APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
+      APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+    with:
+      status-checks: ${{ inputs.pre-commit-required-status-check }}
+      description: "pre-commit check"
+      status: ${{ needs.pre-commit-checks.result == 'cancelled' && 'error' || needs.pre-commit-checks.result }}
