@@ -46,21 +46,23 @@ runs:
       run: |
         # get make targets starting with the string 'ci-test-' and output them as a json array with region located in the make target
 
-        # Function to extract TF_VAR_region value from a make target
+        # Function to extract default region value from a make target
         get_region() {
             local target=$1
             # Fetching the relevant line with the TF_VAR_region assignment, then extracting the default region value
-            grep -A1 "^$target:" Makefile | sed -n "s/.*TF_VAR_region=\$(or \$(REGION),\([^)]*\)).*/\1/p"
+            grep -A1 "^$target:" Makefile | sed -n "s/.*TF_VAR_region := \$(or \$(REGION),\$(TF_VAR_region),\(.*\)))/\1/p"
         }
-
         # Initiate an empty JSON array
         CI_TEST_MAKE_TARGETS='[]'
 
         # Get the ci-test- targets and their regions
         while IFS= read -r target; do
+            echo "Processing target: $target"  # Debugging output
             region=$(get_region "$target")
+            echo "Extracted region: $region"  # Debugging output
             # Create a JSON object for the current target and region
             json_object="{\"make-target\":\"$target\", \"region\":\"$region\"}"
+            echo "Formed JSON object: $json_object"  # Debugging output
             # Add the JSON object to the JSON array
             CI_TEST_MAKE_TARGETS=$(echo $CI_TEST_MAKE_TARGETS | jq -c --argjson obj "$json_object" '. + [$obj]')
         done < <(grep -o "^ci-test-[^:]*" Makefile)
