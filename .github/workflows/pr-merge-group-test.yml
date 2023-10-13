@@ -52,6 +52,7 @@ jobs:
     secrets:
       APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
       APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+      TOKEN: ${{ secrets.TOKEN }}
     with:
       status-checks: ${{ inputs.e2e-required-status-check }}
       description: "automated report success in pull request"
