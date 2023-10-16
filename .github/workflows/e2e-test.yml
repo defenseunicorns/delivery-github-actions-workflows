@@ -111,7 +111,7 @@ jobs:
         if [[ "${{ inputs.e2e-test-matrix }}" != "" ]]; then
           echo "E2E_TEST_MATRIX=$(echo '${{ toJSON(fromJSON(inputs.e2e-test-matrix)) }}' | jq -c)" >> $GITHUB_OUTPUT
         else
-        echo "E2E_TEST_MATRIX=$(echo '${{ toJSON(fromJSON(needs.set-test-vars.outputs.e2e-test-matrix)) }}' | jq -c)" >> $GITHUB_OUTPUT
+          echo "E2E_TEST_MATRIX=$(echo '${{ toJSON(fromJSON(needs.set-test-vars.outputs.e2e-test-matrix)) }}' | jq -c)" >> $GITHUB_OUTPUT
         fi
 
         echo $E2E_TEST_MATRIX | jq
