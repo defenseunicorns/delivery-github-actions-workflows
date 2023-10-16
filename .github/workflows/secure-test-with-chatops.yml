@@ -53,9 +53,9 @@ jobs:
         golang_version: ${{ needs.get-buildharness-software-versions.outputs.golang_version }}
         terraform_version: ${{ needs.get-buildharness-software-versions.outputs.terraform_version }}
         zarf_version: ${{ needs.get-buildharness-software-versions.outputs.zarf_version }}
-        region: us-gov-east-1
+        region: us-gov-west-1
         send-status: false
-        make-target: "ci-test-complete-govcloud"
+        make-target: "test-release-complete-secure"
         role-to-assume: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
 
   # Send slack message if the e2e-govcloud-secure test fails

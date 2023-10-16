@@ -30,6 +30,11 @@ on:
         type: string
         required: false
         default: '["e2e-tests"]'
+      release-branch:
+        description: "if this is a release branch, determines the e2e test matrix to use"
+        type: boolean
+        required: false
+        default: false
       debug:
         description: "debug mode"
         type: boolean
@@ -46,6 +51,8 @@ jobs:
     steps:
       - name: Set Vars
         id: set_test_vars
+        env:
+          IS_RELEASE_BRANCH: ${{ inputs.release-branch }}
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/set-test-vars@main
         with:
           application_id: ${{ secrets.APPLICATION_ID }}

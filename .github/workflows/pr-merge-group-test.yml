@@ -20,19 +20,45 @@ on:
         required: true
 
     inputs:
-      common-e2e-test-matrix:
-        description: "make target and region to run e2e tests on, must be json formatted"
+      common-ci-e2e-test-matrix:
+        description: >
+          make target and region to run e2e tests on, must be json formatted
+          If not provided, upstream workflow will run all make targets in the caller repo's Makefile that start with 'test-ci-'
+          These tests are ran when:
+            - In the merge queue when merging into main
+            - In the merge queue when merging into a release-please branch that would cut a release of the repo
+
+          example input:
+            [
+              {
+                "make-target": "test-ci-complete-common",
+                "region": "us-east-2"
+              }
+            ]
         type: string
         required: false
-        default: >-
-          [
-            {
-              "make-target": "ci-test-common",
-              "region": "us-east-2"
-            }
-          ]
       release-e2e-test-matrix:
-        description: "make target and region to run e2e tests on, must be json formatted, this is optional to override running all 'ci-test' make target tests"
+        description: >
+          make target and region to run e2e tests on, must be json formatted
+          If not provided, upstream workflow will run all make targets in the caller repo's Makefile that start with 'test-release-' and 'test-ci-'
+          These tests are ran when:
+            - In the merge queue when merging into a release-please branch that would cut a release of the repo
+
+          example input:
+            [
+              {
+                "make-target": "test-ci-complete-common",
+                "region": "us-east-2"
+              },
+              {
+                "make-target": "test-release-complete-common",
+                "region": "us-gov-west-1"
+              },
+              {
+                "make-target": "test-release-complete-whatever",
+                "region": "us-gov-east-1"
+              }
+            ]
         type: string
         required: false
       e2e-required-status-check:
@@ -151,8 +177,9 @@ jobs:
       AWS_COMMERCIAL_ROLE_TO_ASSUME: ${{ secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }}
       AWS_GOVCLOUD_ROLE_TO_ASSUME: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
     with:
-      e2e-test-matrix: ${{ inputs.common-e2e-test-matrix }}
+      e2e-test-matrix: ${{ inputs.common-ci-e2e-test-matrix || null }} # null will run all 'test-ci-' make targets
       e2e-required-status-check: ${{ inputs.e2e-required-status-check }}
+      release-branch: false
 
   # this release e2e test will be ran when
   # 1. it's a merge group event
@@ -174,5 +201,6 @@ jobs:
       AWS_COMMERCIAL_ROLE_TO_ASSUME: ${{ secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }}
       AWS_GOVCLOUD_ROLE_TO_ASSUME: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
     with:
-      e2e-test-matrix: ${{ inputs.release-e2e-test-matrix || null }} # null will run all 'ci-test' make targets
+      e2e-test-matrix: ${{ inputs.release-e2e-test-matrix || null }} # null will run all 'test-ci-' and 'test-release-' make targets
       e2e-required-status-check: ${{ inputs.e2e-required-status-check }}
+      release-branch: true

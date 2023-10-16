@@ -17,7 +17,7 @@ inputs:
 outputs:
   e2e-test-matrix:
     description: The matrix of e2e tests to run
-    value: ${{ steps.set-vars.outputs.CI_TEST_MAKE_TARGETS }}
+    value: ${{ steps.set-vars.outputs.TEST_MAKE_TARGETS }}
   pre-commit-test-matrix:
     description: The matrix of pre-commit tests to run
     value: ${{ steps.set-vars.outputs.PRE_COMMIT_MAKE_TARGETS }}
@@ -44,30 +44,43 @@ runs:
       shell: bash -e -o pipefail {0}
       id: set-vars
       run: |
-        # get make targets starting with the string 'ci-test-' and output them as a json array with region located in the make target
+        IS_RELEASE_BRANCH=${IS_RELEASE_BRANCH:-false} #default to false if not set
 
         # Function to extract default region value from a make target
         get_region() {
             local target=$1
             # Fetching the relevant line with the TF_VAR_region assignment, then extracting the default region value
-            grep -A1 "^$target:" Makefile | sed -n "s/.*TF_VAR_region := \$(or \$(REGION),\$(TF_VAR_region),\(.*\)))/\1/p"
+            grep -A1 "^$target:" Makefile | sed -n "s/.*TF_VAR_region := \$(or \$(REGION),\$(TF_VAR_region),\(.*\))/\1/p"
         }
-        # Initiate an empty JSON array
-        CI_TEST_MAKE_TARGETS='[]'
 
-        # Get the ci-test- targets and their regions
-        while IFS= read -r target; do
-            echo "Processing target: $target"  # Debugging output
-            region=$(get_region "$target")
-            echo "Extracted region: $region"  # Debugging output
-            # Create a JSON object for the current target and region
-            json_object="{\"make-target\":\"$target\", \"region\":\"$region\"}"
-            echo "Formed JSON object: $json_object"  # Debugging output
-            # Add the JSON object to the JSON array
-            CI_TEST_MAKE_TARGETS=$(echo $CI_TEST_MAKE_TARGETS | jq -c --argjson obj "$json_object" '. + [$obj]')
-        done < <(grep -o "^ci-test-[^:]*" Makefile)
-        echo "found ci-test make targets: $CI_TEST_MAKE_TARGETS"
-        echo "CI_TEST_MAKE_TARGETS=$CI_TEST_MAKE_TARGETS" >> $GITHUB_OUTPUT
+        # Function to process targets and add them to TEST_MAKE_TARGETS
+        process_targets() {
+            local prefix=$1
+            while IFS= read -r target; do
+                echo "Processing target: $target"  # Debugging output
+                region=$(get_region "$target")
+                echo "Extracted region: $region"  # Debugging output
+                # Create a JSON object for the current target and region
+                json_object="{\"make-target\":\"$target\", \"region\":\"$region\"}"
+                echo "Formed JSON object: $json_object"  # Debugging output
+                # Add the JSON object to the JSON array
+                TEST_MAKE_TARGETS=$(echo $TEST_MAKE_TARGETS | jq -c --argjson obj "$json_object" '. + [$obj]')
+            done < <(grep -o "^$prefix[^:]*" Makefile)
+        }
+
+        # Initiate an empty JSON array
+        TEST_MAKE_TARGETS='[]'
+
+        # Always process test-ci- targets
+        process_targets "test-ci-"
+
+        # If IS_RELEASE_BRANCH is true, process test-release- targets and add them to the array
+        if [ "$IS_RELEASE_BRANCH" = true ]; then
+            process_targets "test-release-"
+        fi
+
+        echo "found test make targets: $TEST_MAKE_TARGETS"
+        echo "TEST_MAKE_TARGETS=$TEST_MAKE_TARGETS" >> $GITHUB_OUTPUT
 
         # get make targets starting with the string 'pre-commit-' and output them as a json array, ignoring pre-commit-all specifically
         PRE_COMMIT_MAKE_TARGETS=$(make help | grep 'pre-commit-' | grep -v 'pre-commit-all' | awk '{print $2}' | jq -R -s -c 'split("\n")[:-1]')
