@@ -19,6 +19,55 @@ on:
         description: "AWS Govcloud IAM Role to assume"
         required: true
 
+    inputs:
+      common-ci-e2e-test-matrix:
+        description: >
+          make target and region to run e2e tests on, must be json formatted
+          If not provided, upstream workflow will run all make targets in the caller repo's Makefile that start with 'test-ci-'
+          These tests are ran when:
+            - In the merge queue when merging into main
+            - In the merge queue when merging into a release-please branch that would cut a release of the repo
+
+          example input:
+            [
+              {
+                "make-target": "test-ci-complete-common",
+                "region": "us-east-2"
+              }
+            ]
+        type: string
+        required: false
+      release-e2e-test-matrix:
+        description: >
+          make target and region to run e2e tests on, must be json formatted
+          If not provided, upstream workflow will run all make targets in the caller repo's Makefile that start with 'test-release-' and 'test-ci-'
+          These tests are ran when:
+            - In the merge queue when merging into a release-please branch that would cut a release of the repo
+
+          example input:
+            [
+              {
+                "make-target": "test-ci-complete-common",
+                "region": "us-east-2"
+              },
+              {
+                "make-target": "test-release-complete-common",
+                "region": "us-gov-west-1"
+              },
+              {
+                "make-target": "test-release-complete-whatever",
+                "region": "us-gov-east-1"
+              }
+            ]
+        type: string
+        required: false
+      e2e-required-status-check:
+        description: "status check to report when e2e tests are complete"
+        type: string
+        required: false
+        default: '["e2e-tests"]'
+
+
 jobs:
   # on pull_request, report success for required status checks. this allows the testing to only run inside the merge queue.
   # "status-checks" is a json array of status checks to report the status for.
@@ -29,8 +78,9 @@ jobs:
     secrets:
       APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
       APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+      TOKEN: ${{ secrets.TOKEN }}
     with:
-      status-checks: '["test / e2e-commercial-insecure", "test / e2e-govcloud-secure"]'
+      status-checks: ${{ inputs.e2e-required-status-check }}
       description: "automated report success in pull request"
       status: "success"
 
@@ -84,68 +134,73 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TOKEN || steps.get_installation_token.outputs.token }}
 
-  # Run the E2E insecure tests in the commercial account only in the merge queue and when there are relevant changes.
-  e2e-commercial-insecure:
-    if: github.event_name == 'merge_group'
+  # automatically report success if there are no relevant changes to run the tests on in the merge queue and it's not a release-please branch targeting main
+  auto-e2e-test-report-success:
     runs-on: ubuntu-latest
-    needs: get-changes
+    needs:
+      - get-changes
+      - get-branch-name
+    if: |
+        github.event_name == 'merge_group' &&
+        needs.get-changes.outputs.relevant-changes == 'false' &&
+        needs.get-branch-name.outputs.branch-name != 'release-please--branches--main'
     steps:
-      - name: Report status success if no matching files
+      - name: Report status success if no matching files and not a release-please branch targeting main
         if: needs.get-changes.outputs.relevant-changes == 'false'
         uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/report-status-context@main
         with:
-          status-check: "test / e2e-commercial-insecure"
+          status-check: ${{ inputs.e2e-required-status-check }}
           status: "success"
           description: "no relevant changes to run tests on"
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           token: ${{ secrets.TOKEN }}
 
-      - name: Run E2E commercial insecure tests
-        if: needs.get-changes.outputs.relevant-changes == 'true'
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
-        with:
-          application_id: ${{ secrets.APPLICATION_ID }}
-          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-          token: ${{ secrets.TOKEN }}
-          role-to-assume: ${{ secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }}
-          region: us-east-2
-          github-context: "test / e2e-commercial-insecure"
-          test-to-run: "insecure"
 
-  # Only Run the E2E secure tests in the govcloud account while in the merge queue when it is a release-please branch into main and when there are relevant changes.
-  e2e-govcloud-secure:
-    if: github.event_name == 'merge_group'
+  # this e2e test will be ran when
+  # 1. it's a merge group event
+  # 2. there are matching relevant file changes
+  # 3. it is not a release-please branch targeting main
+  common-e2e-test:
     needs:
-      - get-branch-name
       - get-changes
-    runs-on: ubuntu-latest
-    steps:
-      # if no matching relevant files or if not a release-please branch targeting main, report success
-      - name: Report status success
-        if: |
-          needs.get-changes.outputs.relevant-changes == 'false' ||
-          (needs.get-changes.outputs.relevant-changes == 'true' && needs.get-branch-name.outputs.branch-name != 'release-please--branches--main')
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/report-status-context@main
-        with:
-          status-check: "test / e2e-govcloud-secure"
-          status: "success"
-          description: "no relevant changes to run tests on"
-          application_id: ${{ secrets.APPLICATION_ID }}
-          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-          token: ${{ secrets.TOKEN }}
+      - get-branch-name
+    if: |
+        github.event_name == 'merge_group' &&
+        needs.get-changes.outputs.relevant-changes == 'true' &&
+        needs.get-branch-name.outputs.branch-name != 'release-please--branches--main'
+    uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/e2e-test.yml@main
+    secrets:
+      APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
+      APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+      TOKEN: ${{ secrets.TOKEN }}
+      AWS_COMMERCIAL_ROLE_TO_ASSUME: ${{ secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }}
+      AWS_GOVCLOUD_ROLE_TO_ASSUME: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
+    with:
+      e2e-test-matrix: ${{ inputs.common-ci-e2e-test-matrix || null }} # null will run all 'test-ci-' make targets
+      e2e-required-status-check: ${{ inputs.e2e-required-status-check }}
+      release-branch: false
 
-      # if there are matching relevant files and it is a release-please branch targeting main, run the tests
-      - name: Run E2E govcloud secure tests
-        if: |
-          needs.get-changes.outputs.relevant-changes == 'true'  &&
-          needs.get-branch-name.outputs.branch-name == 'release-please--branches--main'
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/e2e@main
-        with:
-          application_id: ${{ secrets.APPLICATION_ID }}
-          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-          token: ${{ secrets.TOKEN }}
-          role-to-assume: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
-          region: us-gov-east-1
-          github-context: "test / e2e-govcloud-secure"
-          test-to-run: "secure"
+  # this release e2e test will be ran when
+  # 1. it's a merge group event
+  # 2. there are matching relevant file changes
+  # 3. it is a release-please branch targeting main
+  release-e2e-test:
+    needs:
+      - get-changes
+      - get-branch-name
+    if: |
+        github.event_name == 'merge_group' &&
+        needs.get-changes.outputs.relevant-changes == 'true' &&
+        needs.get-branch-name.outputs.branch-name == 'release-please--branches--main'
+    uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/e2e-test.yml@main
+    secrets:
+      APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
+      APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+      TOKEN: ${{ secrets.TOKEN }}
+      AWS_COMMERCIAL_ROLE_TO_ASSUME: ${{ secrets.AWS_COMMERCIAL_ROLE_TO_ASSUME }}
+      AWS_GOVCLOUD_ROLE_TO_ASSUME: ${{ secrets.AWS_GOVCLOUD_ROLE_TO_ASSUME }}
+    with:
+      e2e-test-matrix: ${{ inputs.release-e2e-test-matrix || null }} # null will run all 'test-ci-' and 'test-release-' make targets
+      e2e-required-status-check: ${{ inputs.e2e-required-status-check }}
+      release-branch: true

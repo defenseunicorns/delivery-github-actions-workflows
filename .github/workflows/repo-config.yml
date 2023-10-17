@@ -26,12 +26,8 @@ on:
         required: false
         default: |-
           checks:
-            - context: 'pre-commit / pre-commit-checks (common)'
-            - context: 'pre-commit / pre-commit-checks (golang)'
-            - context: 'pre-commit / pre-commit-checks (renovate)'
-            - context: 'pre-commit / pre-commit-checks (terraform)'
-            - context: 'test / e2e-commercial-insecure'
-            - context: 'test / e2e-govcloud-secure'
+            - context: 'e2e-tests'
+            - context: 'pre-commit-checks'
 
 jobs:
   repo-config:
