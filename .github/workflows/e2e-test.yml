@@ -114,8 +114,6 @@ jobs:
           echo "E2E_TEST_MATRIX=$(echo '${{ needs.set-test-vars.outputs.e2e-test-matrix }}' | jq -c)" >> $GITHUB_OUTPUT
         fi
 
-        echo $E2E_TEST_MATRIX | jq
-
   matrix_debug:
     runs-on: ubuntu-latest
     needs:
