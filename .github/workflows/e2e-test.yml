@@ -139,6 +139,7 @@ jobs:
       - set-test-vars
       - determine-matrix
     strategy:
+      fail-fast: false
       matrix:
         include: ${{ fromJSON(needs.determine-matrix.outputs.e2e-test-matrix) }}
     steps:
@@ -161,6 +162,7 @@ jobs:
   report-e2e-test-status:
     uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/report-status.yml@main
     needs: e2e-test
+    if: always()
     secrets:
       APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
       APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}

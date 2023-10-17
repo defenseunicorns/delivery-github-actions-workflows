@@ -57,6 +57,7 @@ jobs:
       - set-test-vars
       - get-buildharness-software-versions
     strategy:
+      fail-fast: false
       matrix:
         check-type: ${{ fromJSON(needs.set-test-vars.outputs.pre-commit-test-matrix) }}
     steps:
@@ -73,6 +74,7 @@ jobs:
   report-pre-commit-test-status:
     uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/report-status.yml@main
     needs: pre-commit-checks
+    if: always()
     secrets:
       APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
       APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
