@@ -136,7 +136,6 @@ jobs:
 
   # automatically report success if there are no relevant changes to run the tests on in the merge queue and it's not a release-please branch targeting main
   auto-e2e-test-report-success:
-    runs-on: ubuntu-latest
     needs:
       - get-changes
       - get-branch-name
@@ -144,18 +143,15 @@ jobs:
         github.event_name == 'merge_group' &&
         needs.get-changes.outputs.relevant-changes == 'false' &&
         needs.get-branch-name.outputs.branch-name != 'release-please--branches--main'
-    steps:
-      - name: Report status success if no matching files and not a release-please branch targeting main
-        if: needs.get-changes.outputs.relevant-changes == 'false'
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/report-status-context@main
-        with:
-          status-check: ${{ inputs.e2e-required-status-check }}
-          status: "success"
-          description: "no relevant changes to run tests on"
-          application_id: ${{ secrets.APPLICATION_ID }}
-          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-          token: ${{ secrets.TOKEN }}
-
+    uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/report-status.yml@main
+    secrets:
+      APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
+      APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+      TOKEN: ${{ secrets.TOKEN }}
+    with:
+      status-checks: ${{ inputs.e2e-required-status-check }}
+      description: "no relevant changes, auto report success"
+      status: "success"
 
   # this e2e test will be ran when
   # 1. it's a merge group event
