@@ -164,4 +164,4 @@ runs:
         GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref || github.event.pull_request.head.ref || github.ref_name }}
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
-        GITHUB_STATE: ${{ steps.run_e2e_outcome == 'cancelled' == 'error' || steps.run_e2e.outcome }}
+        GITHUB_STATE: ${{ steps.run_e2e.outcome == 'cancelled' == 'error' || steps.run_e2e.outcome }}
