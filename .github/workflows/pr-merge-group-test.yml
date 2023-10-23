@@ -130,7 +130,7 @@ jobs:
         run: |
           PR_NUMBER=$(echo $GITHUB_REF_NAME | grep -o 'pr-[0-9]*' | sed 's/pr-//')
           PR_URL="https://github.com/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
-          echo "pr_branch_name=$(gh pr view $PR_URL --json headRefName  | jq -r .headRefName) >> $GITHUB_OUTPUT"
+          echo "pr_branch_name=$(gh pr view $PR_URL --json headRefName  | jq -r .headRefName)" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.TOKEN || steps.get_installation_token.outputs.token }}
 
