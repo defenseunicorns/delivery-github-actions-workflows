@@ -42,6 +42,7 @@ runs:
       with:
         application_id: ${{ inputs.application_id }}
         application_private_key: ${{ inputs.application_private_key }}
+
     - name: Configure Repository settings
       id: configure-repository-settings
       uses: octokit/request-action@v2.x

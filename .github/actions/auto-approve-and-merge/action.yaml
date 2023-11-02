@@ -13,7 +13,7 @@ inputs:
   application_private_key:
     description: 'The GitHub App private key'
     required: false
-  target_branch:
+  branch:
     description: 'The branch to merge into'
     required: false
     default: 'main'
@@ -49,7 +49,7 @@ runs:
       uses: devmasx/merge-branch@master
       with:
         type: now
-        target_branch: ${{ inputs.target_branch }}
+        target_branch: ${{ inputs.branch }}
         github_token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
 
     - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
