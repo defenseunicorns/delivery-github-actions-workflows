@@ -35,9 +35,29 @@ runs:
         github-token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
         review-message: "Auto approved"
 
+    - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
+      uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
+      with:
+        application_id: ${{ secrets.APPLICATION_ID }}
+        application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+        token: ${{ secrets.TOKEN }}
+        branch: ${{ inputs.branch }}
+        checks: ${{ inputs.checks }}
+        require_code_owner_reviews: false
+
     - name: Auto Merge
       uses: devmasx/merge-branch@master
       with:
         type: now
         target_branch: ${{ inputs.target_branch }}
         github_token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
+
+    - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
+      uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
+      with:
+        application_id: ${{ secrets.APPLICATION_ID }}
+        application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+        token: ${{ secrets.TOKEN }}
+        branch: ${{ inputs.branch }}
+        checks: ${{ inputs.checks }}
+        require_code_owner_reviews: true

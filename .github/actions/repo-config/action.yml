@@ -1,0 +1,112 @@
+name: repo-config
+
+description: Configure a repository and branch protection with a github app
+
+inputs:
+  # either pass in a token, or an app id and private key
+  token:
+    description: "The GitHub token to use for authentication"
+    required: false
+  application_id:
+    description: "The GitHub App ID"
+    required: false
+  application_private_key:
+    description: "The GitHub App private key"
+    required: false
+  branch:
+    type: string
+    description: "Branch to configure"
+    required: false
+    default: "main"
+  checks: #allows status checks to be configurable
+    type: string
+    description: "YAML formatted required status checks"
+    required: false
+    default: |-
+      checks:
+        - context: 'e2e-tests'
+        - context: 'pre-commit-checks'
+  require_code_owner_reviews:
+    type: boolean
+    description: "Require code owner reviews"
+    required: false
+    default: true
+
+runs:
+  using: composite
+  steps:
+    - name: Get token
+      id: get_installation_token
+      uses: peter-murray/workflow-application-token-action@v2
+      if: ${{ !inputs.token }}
+      with:
+        application_id: ${{ inputs.application_id }}
+        application_private_key: ${{ inputs.application_private_key }}
+    - name: Configure Repository settings
+      id: configure-repository-settings
+      uses: octokit/request-action@v2.x
+      with:
+        route: PATCH /repos/{owner}/{repo}
+        owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
+        repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
+        allow_squash_merge: true
+        allow_merge_commit: false
+        allow_rebase_merge: false
+        allow_auto_merge: true
+        delete_branch_on_merge: true
+        allow_update_branch: false
+        squash_merge_commit_title: "PR_TITLE"
+        squash_merge_commit_message: "BLANK"
+        web_commit_signoff_required: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
+
+    - name: Create config json body for complex parameters
+      id: create-config-body
+      shell: bash -e -o pipefail {0}
+      run: |
+        #build required status checks
+        BODY=$(
+        yq -e -o json <<EOF | jq -c
+        required_status_checks:
+          strict: true
+          ${{ inputs.checks }}
+        required_pull_request_reviews:
+          dismiss_stale_reviews: true
+          require_code_owner_reviews: ${{ inputs.require_code_owner_reviews }}}
+          required_approving_review_count: 1
+          require_last_push_approval: false
+        EOF
+        )
+
+        #create parameters for octokit/request-action
+        echo REQUIRED_STATUS_CHECKS=$(echo $BODY | jq .required_status_checks -c) >> $GITHUB_OUTPUT
+        echo REQUIRED_PULL_REQUEST_REVIEWS=$(echo $BODY | jq .required_pull_request_reviews -c) >> $GITHUB_OUTPUT
+
+    - name: Configure Branch protection rules
+      id: configure-branch-protection-rules
+      uses: octokit/request-action@v2.x
+      with:
+        route: PUT /repos/{owner}/{repo}/branches/{branch}/protection
+        owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
+        repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
+        branch: ${{ inputs.branch }}
+        required_status_checks: ${{ steps.create-config-body.outputs.REQUIRED_STATUS_CHECKS }}
+        enforce_admins: true
+        required_pull_request_reviews: ${{ steps.create-config-body.outputs.REQUIRED_PULL_REQUEST_REVIEWS }}
+        required_linear_history: true
+        restrictions: 'null'
+        required_conversation_resolution: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
+
+    - name: Configure Branch required_signatures on branch
+      id: configure-branch-required-signatures
+      uses: octokit/request-action@v2.x
+      with:
+        route: POST /repos/{owner}/{repo}/branches/{branch}/protection/required_signatures
+        owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
+        repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
+        branch: ${{ inputs.branch }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
