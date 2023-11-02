@@ -52,3 +52,10 @@ jobs:
           golang_version: ${{ steps.buildharness-software-versions.outputs.golang_version }}
           terraform_version: ${{ steps.buildharness-software-versions.outputs.terraform_version }}
           zarf_version: ${{ steps.buildharness-software-versions.outputs.zarf_version }}
+
+      - name: Auto approve and merge
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/auto-approve-and-merge@main
+        with:
+          application_id: ${{ secrets.APPLICATION_ID }}
+          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          token: ${{ secrets.TOKEN }}
