@@ -24,14 +24,14 @@ on:
         required: false
         type: boolean
         default: true
-    checks: #allows status checks to be configurable
-      type: string
-      description: "YAML formatted required status checks"
-      required: false
-      default: |-
-        checks:
-          - context: 'e2e-tests'
-          - context: 'pre-commit-checks'
+      checks: #allows status checks to be configurable
+        type: string
+        description: "YAML formatted required status checks"
+        required: false
+        default: |-
+          checks:
+            - context: 'e2e-tests'
+            - context: 'pre-commit-checks'
 
 permissions:
   id-token: write
