@@ -55,7 +55,7 @@ runs:
     - name: Auto Merge
       shell: bash -e -o pipefail {0}
       env:
-        GH_TOKEN: ${{ secrets.TOKEN || steps.get_installation_token.outputs.token }}
+        GH_TOKEN: ${{ inputs.TOKEN || steps.get_installation_token.outputs.token }}
       run: |
         gh pr merge --auto
 
