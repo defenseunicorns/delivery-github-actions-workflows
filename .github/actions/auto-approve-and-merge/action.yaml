@@ -35,8 +35,6 @@ runs:
         github-token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
         review-message: "Auto approved"
 
-    - uses: actions/checkout@v4
-
     - name: Auto Merge
       uses: devmasx/merge-branch@master
       with:
