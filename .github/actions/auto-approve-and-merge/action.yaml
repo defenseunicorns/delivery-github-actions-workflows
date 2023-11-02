@@ -52,15 +52,12 @@ runs:
         checks: ${{ inputs.checks }}
         require_code_owner_reviews: false
 
-    - name: debug
-      uses: hmarr/debug-action@v2
-
     - name: Auto Merge
       shell: bash -e -o pipefail {0}
       env:
         GH_TOKEN: ${{ inputs.TOKEN || steps.get_installation_token.outputs.token }}
       run: |
-        gh pr merge ${{ github.head_ref }} --auto
+        gh pr merge ${{ github.head_ref }} --auto -s
 
     - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
