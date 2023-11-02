@@ -18,6 +18,12 @@ on:
       AWS_GOVCLOUD_ROLE_TO_ASSUME:
         description: "AWS Govcloud IAM Role to assume"
         required: true
+    inputs:
+      require_codeowners:
+        description: "Require codeowners"
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   id-token: write
