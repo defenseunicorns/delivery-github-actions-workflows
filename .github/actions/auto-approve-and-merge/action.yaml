@@ -17,6 +17,13 @@ inputs:
     description: 'The branch to merge into'
     required: false
     default: 'main'
+  checks:
+    description: 'The checks to wait for before merging'
+    required: false
+    default: |-
+      checks:
+        - context: 'e2e-tests'
+        - context: 'pre-commit-checks'
 
 runs:
   using: composite
