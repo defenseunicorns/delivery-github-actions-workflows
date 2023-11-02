@@ -57,7 +57,7 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.TOKEN || steps.get_installation_token.outputs.token }}
       run: |
-        gh pr merge --auto
+        gh pr merge --auto ${{ github.ref_name }}
 
     - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
