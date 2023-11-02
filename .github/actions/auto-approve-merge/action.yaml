@@ -1,0 +1,45 @@
+name: Auto approve and merge
+
+description: Auto approve and merge
+
+inputs:
+  # either pass in a token, or an app id and private key
+  token:
+    description: 'The GitHub token to use for authentication'
+    required: false
+  application_id:
+    description: 'The GitHub App ID'
+    required: false
+  application_private_key:
+    description: 'The GitHub App private key'
+    required: false
+  target_branch:
+    description: 'The branch to merge into'
+    required: false
+    default: 'main'
+
+runs:
+  using: composite
+  steps:
+    - name: Get token
+      id: get_installation_token
+      uses: peter-murray/workflow-application-token-action@v2
+      if: ${{ !inputs.token }}
+      with:
+        application_id: ${{ inputs.application_id }}
+        application_private_key: ${{ inputs.application_private_key }}
+
+    - name: Auto approve
+      uses: hmarr/auto-approve-action@v3
+      with:
+        github-token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
+        review-message: "Auto approved"
+
+    - uses: actions/checkout@v4
+
+    - name: Auto Merge
+      uses: devmasx/merge-branch@master
+      with:
+        type: now
+        target_branch: ${{ inputs.target_branch }}
+        github_token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
