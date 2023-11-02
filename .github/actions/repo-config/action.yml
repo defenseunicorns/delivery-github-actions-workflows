@@ -59,7 +59,7 @@ runs:
         squash_merge_commit_message: "BLANK"
         web_commit_signoff_required: true
       env:
-        GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
+        GITHUB_TOKEN: ${{ inputs.token || steps.get_installation_token.outputs.token }}
 
     - name: Create config json body for complex parameters
       id: create-config-body
@@ -98,7 +98,7 @@ runs:
         restrictions: 'null'
         required_conversation_resolution: true
       env:
-        GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
+        GITHUB_TOKEN: ${{ inputs.token || steps.get_installation_token.outputs.token }}
 
     - name: Configure Branch required_signatures on branch
       id: configure-branch-required-signatures
@@ -109,4 +109,4 @@ runs:
         repo: ${{ github.event.client_payload.github.payload.repository.name || github.event.repository.name }}
         branch: ${{ inputs.branch }}
       env:
-        GITHUB_TOKEN: ${{ secrets.token || steps.get_installation_token.outputs.token }}
+        GITHUB_TOKEN: ${{ inputs.token || steps.get_installation_token.outputs.token }}
