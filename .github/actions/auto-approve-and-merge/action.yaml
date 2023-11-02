@@ -52,6 +52,8 @@ runs:
         checks: ${{ inputs.checks }}
         require_code_owner_reviews: false
 
+    - uses: actions/checkout@v4
+
     - name: Auto Merge
       shell: bash -e -o pipefail {0}
       env:
