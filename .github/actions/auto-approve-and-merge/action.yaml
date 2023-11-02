@@ -53,11 +53,11 @@ runs:
         require_code_owner_reviews: false
 
     - name: Auto Merge
-      uses: devmasx/merge-branch@master
-      with:
-        type: now
-        target_branch: ${{ inputs.branch }}
-        github_token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
+      shell: bash -e -o pipefail {0}
+      env:
+        GH_TOKEN: ${{ secrets.TOKEN || steps.get_installation_token.outputs.token }}
+      run: |
+        gh pr merge --auto
 
     - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
