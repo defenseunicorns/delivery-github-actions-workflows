@@ -38,9 +38,9 @@ runs:
     - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
       with:
-        application_id: ${{ secrets.APPLICATION_ID }}
-        application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-        token: ${{ secrets.TOKEN }}
+        application_id: ${{ inputs.application_id }}
+        application_private_key: ${{ inputs.application_private_key }}
+        token: ${{ inputs.token }}
         branch: ${{ inputs.branch }}
         checks: ${{ inputs.checks }}
         require_code_owner_reviews: false
@@ -55,9 +55,9 @@ runs:
     - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
       with:
-        application_id: ${{ secrets.APPLICATION_ID }}
-        application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-        token: ${{ secrets.TOKEN }}
+        application_id: ${{ inputs.application_id }}
+        application_private_key: ${{ inputs.application_private_key }}
+        token: ${{ inputs.token }}
         branch: ${{ inputs.branch }}
         checks: ${{ inputs.checks }}
         require_code_owner_reviews: true
