@@ -56,10 +56,13 @@ runs:
       shell: bash -e -o pipefail {0}
       env:
         GH_TOKEN: ${{ inputs.TOKEN || steps.get_installation_token.outputs.token }}
-        PULL_REQUEST_ID: ${{ github.event.client_payload.pull_request.id }}
+        PULL_REQUEST_ID: ${{ github.event.client_payload.pull_request.node_id }}
       # run: |
       #   gh pr merge ${{ github.head_ref }} --auto -s
       run: |
+        echo "Pull Request ID: $PULL_REQUEST_ID"
+        echo "Client Payload: ${{ github.event.client_payload.pull_request.node_id }}"
+        echo "Pull Node ID: ${{ github.event.pull_request.node_id }}"
         # GraphQL mutation as a string
         GRAPHQL_MUTATION='
           mutation enableAutoMerge($pullRequestId: ID!) {
