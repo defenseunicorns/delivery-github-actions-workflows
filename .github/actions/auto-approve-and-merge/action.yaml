@@ -84,7 +84,6 @@ runs:
 
         # Use curl to send the GraphQL mutation
         curl -X POST \
-            --silent \
             --fail-with-body \
             --oauth2-bearer "$(gh auth token)" \
             -H "Content-Type: application/json" \
@@ -92,10 +91,12 @@ runs:
             https://api.github.com/graphql
 
     - name: sleep for 15 seconds to allow the pr to get into the merge queue
+      if: always()
       shell: bash -e -o pipefail {0}
       run: sleep 15
 
     - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team, turn branch protection settings back on
+      if: always()
       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
       with:
         application_id: ${{ inputs.application_id }}
