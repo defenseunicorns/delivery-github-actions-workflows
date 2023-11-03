@@ -49,34 +49,32 @@ runs:
         application_private_key: ${{ inputs.application_private_key }}
         token: ${{ inputs.token }}
         branch: ${{ inputs.branch }}
-        checks: ${{ inputs.checks }}
+        checks: 'checks: []'
         require_code_owner_reviews: false
 
     - name: Auto Merge
       shell: bash -e -o pipefail {0}
       env:
         GH_TOKEN: ${{ inputs.TOKEN || steps.get_installation_token.outputs.token }}
-      # run: |
-      #   gh pr merge ${{ github.head_ref }} --auto -s
       run: |
         # GraphQL mutation as a string
-        GRAPHQL_MUTATION='
-          mutation enableAutoMerge($pullRequestId: ID!) {
-            enablePullRequestAutoMerge(input: {
-              pullRequestId: $pullRequestId
-            }) {
-              pullRequest {
-                number
-                autoMergeRequest {
-                  enabledAt
-                  enabledBy {
-                    login
-                  }
+        read -r -d '' GRAPHQL_MUTATION <<'EOF'
+        mutation enableAutoMerge($pullRequestId: ID!) {
+          enablePullRequestAutoMerge(input: {
+            pullRequestId: $pullRequestId
+          }) {
+            pullRequest {
+              number
+              autoMergeRequest {
+                enabledAt
+                enabledBy {
+                  login
                 }
               }
             }
           }
-        '
+        }
+        EOF
 
         # Use jq to create the JSON payload
         JSON_PAYLOAD=$(jq -n \
@@ -93,7 +91,11 @@ runs:
             -d "$JSON_PAYLOAD" \
             https://api.github.com/graphql
 
-    - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
+    - name: sleep for 15 seconds to allow the pr to get into the merge queue
+      shell: bash -e -o pipefail {0}
+      run: sleep 15
+
+    - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team, turn branch protection settings back on
       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
       with:
         application_id: ${{ inputs.application_id }}
