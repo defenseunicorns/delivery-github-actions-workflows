@@ -60,8 +60,8 @@ runs:
       # run: |
       #   gh pr merge ${{ github.head_ref }} --auto -s
       run: |
-        # The GraphQL mutation
-          read -r -d '' GRAPHQL_MUTATION <<-'EOF'
+        # GraphQL mutation as a string
+        GRAPHQL_MUTATION='
           mutation enableAutoMerge($pullRequestId: ID!) {
             enablePullRequestAutoMerge(input: {
               pullRequestId: $pullRequestId
@@ -77,23 +77,22 @@ runs:
               }
             }
           }
-          EOF
+        '
 
-          # Prepare the JSON payload with jq
-          JSON_PAYLOAD=$(jq -n \
-                            --arg query "$GRAPHQL_MUTATION" \
-                            --arg pullRequestId "$PULL_REQUEST_ID" \
-                            '{
-                              query: $query,
-                              variables: {pullRequestId: $pullRequestId}
-                            }')
+        # Use jq to create the JSON payload
+        JSON_PAYLOAD=$(jq -n \
+                          --arg query "$GRAPHQL_MUTATION" \
+                          --arg pullRequestId "$PULL_REQUEST_ID" \
+                          '{query: $query, variables: {pullRequestId: $pullRequestId}}')
 
-          echo "$JSON_PAYLOAD" | curl https://api.github.com/graphql \
+        # Use curl to send the GraphQL mutation
+        curl -X POST \
             --silent \
             --fail-with-body \
             --oauth2-bearer "$(gh auth token)" \
-            --header "Content-Type: application/json" \
-            --data @-
+            -H "Content-Type: application/json" \
+            -d "$JSON_PAYLOAD" \
+            https://api.github.com/graphql
 
     - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
       uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
