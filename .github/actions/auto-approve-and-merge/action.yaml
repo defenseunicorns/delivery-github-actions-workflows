@@ -58,7 +58,7 @@ runs:
         GH_TOKEN: ${{ inputs.token || steps.get_installation_token.outputs.token }}
       run: |
         # GraphQL mutation as a string
-        read -r -d '' GRAPHQL_MUTATION <<'EOF'
+        GRAPHQL_MUTATION='
           mutation enableAutoMerge($pullRequestId: ID!) {
             enablePullRequestAutoMerge(input: {
               pullRequestId: $pullRequestId
@@ -74,7 +74,7 @@ runs:
               }
             }
           }
-        EOF
+        '
 
         # Use jq to create the JSON payload
         JSON_PAYLOAD=$(jq -n \
