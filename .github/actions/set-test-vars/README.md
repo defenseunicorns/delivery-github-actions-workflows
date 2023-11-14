@@ -46,3 +46,34 @@ pre-commit-renovate: ## Run the renovate pre-commit hooks. Returns nonzero exit 
 pre-commit-common: ## Run the common pre-commit hooks. Returns nonzero exit code if any hooks fail. Uses Docker for maximum compatibility
     $(MAKE) _runhooks HOOK="" SKIP="go-fmt,golangci-lint,terraform_fmt,terraform_docs,terraform_checkov,terraform_tflint,renovate-config-validator"
 ```
+
+<!-- action-docs-description -->
+## Description
+
+This action sets the environment variables needed to run the e2e tests
+<!-- action-docs-description -->
+
+<!-- action-docs-inputs -->
+## Inputs
+
+| parameter | description | required | default |
+| --- | --- | --- | --- |
+| token | The GitHub token to use for authentication | `false` |  |
+| application_id | The GitHub App ID | `false` |  |
+| application_private_key | The GitHub App private key | `false` |  |
+<!-- action-docs-inputs -->
+
+<!-- action-docs-outputs -->
+## Outputs
+
+| parameter | description |
+| --- | --- |
+| e2e-test-matrix | The matrix of e2e tests to run |
+| pre-commit-test-matrix | The matrix of pre-commit tests to run |
+<!-- action-docs-outputs -->
+
+<!-- action-docs-runs -->
+## Runs
+
+This action is a `composite` action.
+<!-- action-docs-runs -->

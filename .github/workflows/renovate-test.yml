@@ -18,20 +18,6 @@ on:
       AWS_GOVCLOUD_ROLE_TO_ASSUME:
         description: "AWS Govcloud IAM Role to assume"
         required: true
-    inputs:
-      require_codeowners:
-        description: "Require codeowners"
-        required: false
-        type: boolean
-        default: true
-      checks: #allows status checks to be configurable
-        type: string
-        description: "YAML formatted required status checks"
-        required: false
-        default: |-
-          checks:
-            - context: 'e2e-tests'
-            - context: 'pre-commit-checks'
 
 permissions:
   id-token: write
