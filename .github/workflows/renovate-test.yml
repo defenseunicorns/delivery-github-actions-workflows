@@ -21,11 +21,14 @@ on:
     inputs:
       branch:
         description: "The branch to merge into, will make changes to branch protection settings for branch specified"
+        type: string
         required: false
         default: "main"
       checks:
         description: "Required status checks to pass before, will make changes to branch protection settings for branch specified"
+        type: string
         required: false
+
 
 permissions:
   id-token: write
