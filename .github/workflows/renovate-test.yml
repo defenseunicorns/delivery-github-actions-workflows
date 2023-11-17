@@ -18,6 +18,14 @@ on:
       AWS_GOVCLOUD_ROLE_TO_ASSUME:
         description: "AWS Govcloud IAM Role to assume"
         required: true
+    inputs:
+      branch:
+        description: "The branch to merge into, will make changes to branch protection settings for branch specified"
+        required: false
+        default: "main"
+      checks:
+        description: "Required status checks to pass before, will make changes to branch protection settings for branch specified"
+        required: false
 
 permissions:
   id-token: write
@@ -59,3 +67,5 @@ jobs:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           token: ${{ secrets.TOKEN }}
+          branch: ${{ inputs.branch }}
+          checks: ${{ inputs.checks }}
