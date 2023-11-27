@@ -31,6 +31,11 @@ inputs:
     description: "Require code owner reviews"
     required: false
     default: true
+  dismiss_stale_reviews:
+    type: boolean
+    description: "Dismiss stale reviews"
+    required: false
+    default: true
 
 runs:
   using: composite
@@ -73,7 +78,7 @@ runs:
           strict: true
           ${{ inputs.checks }}
         required_pull_request_reviews:
-          dismiss_stale_reviews: true
+          dismiss_stale_reviews: ${{ inputs.dismiss_stale_reviews}}
           require_code_owner_reviews: ${{ inputs.require_code_owner_reviews }}
           required_approving_review_count: 1
           require_last_push_approval: false
