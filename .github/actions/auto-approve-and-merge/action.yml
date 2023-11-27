@@ -51,7 +51,7 @@ runs:
         branch: ${{ inputs.branch }}
         checks: ${{ inputs.checks }}
         require_code_owner_reviews: false
-        dismiss_stale_reviews: ${{ inputs.dismiss_stale_reviews }}
+        dismiss_stale_reviews: false
 
     - name: Auto Merge
       shell: bash -e -o pipefail {0}
