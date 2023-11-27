@@ -28,6 +28,10 @@ on:
         description: "Required status checks to pass before, will make changes to branch protection settings for branch specified"
         type: string
         required: false
+        default: |-
+          checks:
+            - context: 'e2e-tests'
+            - context: 'pre-commit-checks'
 
 
 permissions:
