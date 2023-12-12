@@ -5,13 +5,13 @@ description: Run E2E Tests
 inputs:
   # either pass in a token, or an app id and private key
   token:
-    description: 'The GitHub token to use for authentication'
+    description: "The GitHub token to use for authentication"
     required: false
   application_id:
-    description: 'The GitHub App ID'
+    description: "The GitHub App ID"
     required: false
   application_private_key:
-    description: 'The GitHub App private key'
+    description: "The GitHub App private key"
     required: false
   region:
     description: The AWS region to deploy to
@@ -26,7 +26,7 @@ inputs:
   github-context:
     description: The GitHub Status Context to use when updating the status
     required: false
-    default: 'default e2e test context'
+    default: "default e2e test context"
   make-target:
     description: The make target to run
     required: true
@@ -42,7 +42,6 @@ inputs:
   zarf_version:
     description: The version of zarf used by the buildharness release from the caller repo
     required: true
-
 
 runs:
   using: composite
@@ -134,7 +133,11 @@ runs:
       id: run_e2e
       env:
         TF_VAR_region: ${{ inputs.region }}
-        TF_VAR_tags: '{"Pull Request": "${{ github.event.client_payload.github.payload.issue.html_url }}","PR Comment ID": "${{ github.event.client_payload.github.payload.comment.id }}"}' # only input if repository dispatch event and slash command dispatched
+        TF_VAR_tags: >
+          {
+            "Pull Request": "${{ github.event.client_payload.github.payload.issue.html_url || 'NA' }}",
+            "PR Comment ID": "${{ github.event.client_payload.github.payload.comment.id || 'NA' }}"
+          }
       run: |
         echo "Running E2E ${{ inputs.make-target }}" && \
         make ${{ inputs.make-target }} fix-cache-permissions
