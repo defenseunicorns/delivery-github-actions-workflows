@@ -1,0 +1,36 @@
+name: Add new issues to Project Board
+
+description: Update Slash Command Dispatch comment with the run URL
+
+inputs:
+  # either pass in a token, or an app id and private key
+  token:
+    description: 'The GitHub token to use for authentication'
+    required: false
+  application_id:
+    description: 'The GitHub App ID'
+    required: false
+  application_private_key:
+    description: 'The GitHub App private key'
+    required: false
+  project_url:
+    description: 'The GitHub Project URL to attach the issue to'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Get token
+      id: get_installation_token
+      uses: peter-murray/workflow-application-token-action@v2
+      if: ${{ !inputs.token }}
+      with:
+        application_id: ${{ inputs.application_id }}
+        application_private_key: ${{ inputs.application_private_key }}
+        
+    - name: Add issue to project
+      id: add_issue_to_project
+      uses: actions/add-to-project@v0.5.0
+      with:
+        project-url: ${{ inputs.project_url }}
+        github-token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
