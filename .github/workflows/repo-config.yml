@@ -28,6 +28,16 @@ on:
           checks:
             - context: 'e2e-tests'
             - context: 'pre-commit-checks'
+      require_code_owner_reviews:
+        type: boolean
+        description: "Require code owner reviews"
+        required: false
+        default: true
+      required_approving_review_count:
+        type: number
+        description: "Number of required approving reviews"
+        required: false
+        default: 1
 
 jobs:
   repo-config:
@@ -43,4 +53,5 @@ jobs:
           token: ${{ secrets.TOKEN }}
           branch: ${{ inputs.branch }}
           checks: ${{ inputs.checks }}
-          require_code_owner_reviews: true
+          require_code_owner_reviews: ${{ inputs.require_code_owner_reviews }}
+          required_approving_review_count: ${{ inputs.required_approving_review_count }}
