@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Get token
         id: get_installation_token
-        uses: peter-murray/workflow-application-token-action@v2
+        uses: peter-murray/workflow-application-token-action@8e1ba3bf1619726336414f1014e37f17fbadf1db # v2
         if: ${{ !env.TOKEN }}
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
@@ -29,7 +29,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.TOKEN }}
 
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@f3969c04a4ec81d7a9aa4010d84ae6a7602f86a7 # v4
         with:
           token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
           command: manifest
