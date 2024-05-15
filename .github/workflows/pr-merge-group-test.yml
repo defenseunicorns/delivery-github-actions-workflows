@@ -91,7 +91,7 @@ jobs:
     outputs:
       relevant-changes: ${{ steps.get_changes.outputs.relevant }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
       # check if there are any relevant changes to run the tests on
       # because we're watching .release-please-manifest.json, tests will always run when using release please
       - uses: dorny/paths-filter@v2
@@ -118,7 +118,7 @@ jobs:
     steps:
       - name: Get token
         id: get_installation_token
-        uses: peter-murray/workflow-application-token-action@v2
+        uses: peter-murray/workflow-application-token-action@8e1ba3bf1619726336414f1014e37f17fbadf1db # v2
         if: ${{ !env.TOKEN }}
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
