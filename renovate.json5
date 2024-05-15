@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "baseBranches": ["main", "renovate-is-hard"],
+  "extends": [
+    "github>defenseunicorns/narwhal-delivery-renovate-config:hostRules_registry1.json5",
+    "github>defenseunicorns/narwhal-delivery-renovate-config:zarfPackageGenericMatching.json5",
+    // Tells Renovate to maintain one GitHub issue as the "dependency dashboard". See https://docs.renovatebot.com/key-concepts/dashboard
+    ":dependencyDashboard",
+    // Use semantic commit type fix for dependencies and chore for all others if semantic commits are in use. See https://docs.renovatebot.com/presets-default/#semanticprefixfixdepschoreothers
+    ":semanticPrefixFixDepsChoreOthers",
+    // Group all updates together. See https://docs.renovatebot.com/presets-group/#groupall
+    // Apply crowd-sourced package replacement rules. See https://docs.renovatebot.com/presets-replacements/#replacementsall
+    "replacements:all",
+    // Apply crowd-sourced workarounds for known problems with packages. See https://docs.renovatebot.com/presets-workarounds/#workaroundsall
+    "workarounds:all",
+    "helpers:pinGitHubActionDigests"
+  ],
+  // Labels to set in Pull Request. See https://docs.renovatebot.com/configuration-options/#labels
+  "labels": ["renovate"],
+  // Enable updates to the pre-commit-config.yaml file. See https://docs.renovatebot.com/modules/manager/pre-commit/
+  "pre-commit": {
+    "enabled": true
+  },
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "automerge": true,
+  "ignoreTests": true,
+  "forkProcessing": "enabled",
+  "recreateWhen": "always", //https://docs.renovatebot.com/configuration-options/#recreatewhen - allows renovate to recreate PRs with the same name and automerge
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "groupName": "Security Updates",
+    "schedule": [],
+    "dependencyDashboardApproval": false,
+    "minimumReleaseAge": null,
+    "rangeStrategy": "update-lockfile",
+    "commitMessageSuffix": "[SECURITY]",
+    "branchTopic": "{{{datasource}}}-{{{depName}}}-vulnerability",
+    "prCreation": "immediate",
+    "labels": ["security"],
+    "automerge": true,
+    "assignees": ["@defenseunicorns/delivery-aws-iac"]
+  },
+  "osvVulnerabilityAlerts": true
+}
