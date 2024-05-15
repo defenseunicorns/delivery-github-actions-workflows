@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "baseBranches": ["main", "renovate-is-hard"],
+  "baseBranches": ["main"],
   "extends": [
     "github>defenseunicorns/narwhal-delivery-renovate-config:hostRules_registry1.json5",
     "github>defenseunicorns/narwhal-delivery-renovate-config:zarfPackageGenericMatching.json5",
