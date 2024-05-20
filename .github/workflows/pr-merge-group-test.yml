@@ -91,7 +91,7 @@ jobs:
     outputs:
       relevant-changes: ${{ steps.get_changes.outputs.relevant }}
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
       # check if there are any relevant changes to run the tests on
       # because we're watching .release-please-manifest.json, tests will always run when using release please
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
