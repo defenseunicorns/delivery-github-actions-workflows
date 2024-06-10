@@ -29,7 +29,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.TOKEN }}
 
-      - uses: googleapis/release-please-action@3f4784dbc19347947972489b7ed79193ff704b10 # v4
+      - uses: googleapis/release-please-action@7987652d64b4581673a76e33ad5e98e3dd56832f # v4
         with:
           token: ${{ secrets.token || steps.get_installation_token.outputs.token }}
           command: manifest
