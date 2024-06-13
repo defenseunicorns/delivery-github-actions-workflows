@@ -133,7 +133,7 @@ runs:
       id: run_e2e
       env:
         TF_VAR_region: ${{ inputs.region }}
-        TF_VAR_tags: ${{ (github.event.client_payload.github.payload.issue.html_url != null) && format('{"Pull Request":"{0}", "PR Comment ID":"{1}"}', github.event.client_payload.github.payload.issue.html_url, github.event.client_payload.github.payload.comment.id) || '{"GithubCI":"true"}' }}
+        TF_VAR_tags: '{"GithubCI":"true"}'
       run: |
         echo "Running E2E ${{ inputs.make-target }}" && \
         make ${{ inputs.make-target }} fix-cache-permissions
