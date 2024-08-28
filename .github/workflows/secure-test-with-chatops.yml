@@ -70,7 +70,7 @@ jobs:
 
       - name: "Send slack message"
         id: slack
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        uses: slackapi/slack-github-action@5d1fb07d3c4f410b8d278134c714edff31264beb # v1.27.0
         with:
           payload: |
             {
