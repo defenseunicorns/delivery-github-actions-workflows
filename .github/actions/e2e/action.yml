@@ -78,26 +78,26 @@ runs:
         ref: ${{ github.event.client_payload.pull_request.head.ref || github.ref_name }}
 
     - name: Init gopath cache
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+      uses: actions/cache@2cdf405574d6ef1f33a1d12acccd3ae82f47b3f2 # v4
       with:
         path: "${{ github.workspace }}/.cache/go"
         key: "gopath|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
 
     - name: Init gobuild cache
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+      uses: actions/cache@2cdf405574d6ef1f33a1d12acccd3ae82f47b3f2 # v4
       with:
         path: "${{ github.workspace }}/.cache/go-build"
         key: "gobuild|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
 
     - name: Init zarf cache
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+      uses: actions/cache@2cdf405574d6ef1f33a1d12acccd3ae82f47b3f2 # v4
       with:
         path: "${{ github.workspace }}/.cache/.zarf-cache"
         key: "zarf|${{ inputs.zarf_version }}"
 
     - name: Init docker cache
       id: init-docker-cache
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+      uses: actions/cache@2cdf405574d6ef1f33a1d12acccd3ae82f47b3f2 # v4
       with:
         path: "${{ github.workspace }}/.cache/docker"
         key: "docker|${{ inputs.buildharness_version }}"
@@ -114,7 +114,7 @@ runs:
         make docker-load-build-harness
 
     - name: Init Terraform Cache
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+      uses: actions/cache@2cdf405574d6ef1f33a1d12acccd3ae82f47b3f2 # v4
       with:
         path: "${{ github.workspace }}/.cache/.terraform.d/plugin-cache"
         key: "${{ runner.os }}-terraform-plugins|${{ inputs.terraform_version }}|${{ hashFiles('examples/complete/providers.tf') }}"
