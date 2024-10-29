@@ -46,9 +46,9 @@ runs:
       shell: bash -e -o pipefail {0}
       run: |
         echo "Args Named: ${{ toJson(github.event.client_payload.slash_command.args.named) }}"
-        echo "Contains 'make': ${{ contains(github.event.client_payload.slash_command.args.named, 'make') }}"
-        echo "Contains 'region': ${{ contains(github.event.client_payload.slash_command.args.named, 'region') }}"
+        echo "Contains 'make': ${{ contains(toJson(github.event.client_payload.slash_command.args.named), 'make') }}"
+        echo "Contains 'region': ${{ contains(toJson(github.event.client_payload.slash_command.args.named), 'region') }}"
         # contains both make and region
-        echo "Contains 'make' and 'region': ${{ contains(github.event.client_payload.slash_command.args.named, 'make') && contains(github.event.client_payload.slash_command.args.named, 'region') }}"
+        echo "Contains 'make' and 'region': ${{ contains(toJson(github.event.client_payload.slash_command.args.named), 'make') && contains(toJson(github.event.client_payload.slash_command.args.named), 'region') }}"
         # echo formatted string using make and region
         echo ${{ format('[{{"make-target":"{0}", "region":"{1}"}}]', github.event.client_payload.slash_command.args.named.make, github.event.client_payload.slash_command.args.named.region) }}
