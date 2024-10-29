@@ -106,13 +106,13 @@ jobs:
     outputs:
       e2e-test-matrix: ${{ steps.set_matrix.outputs.E2E_TEST_MATRIX }}
     steps:
-    - id: set_matrix
-      run: |
-        if [[ "${{ inputs.e2e-test-matrix }}" != "" ]]; then
-          echo "E2E_TEST_MATRIX=$(echo '${{ inputs.e2e-test-matrix }}' | jq -c)" >> $GITHUB_OUTPUT
-        else
-          echo "E2E_TEST_MATRIX=$(echo '${{ needs.set-test-vars.outputs.e2e-test-matrix }}' | jq -c)" >> $GITHUB_OUTPUT
-        fi
+      - id: set_matrix
+        run: |
+          if [[ "${{ inputs.e2e-test-matrix }}" != "" ]]; then
+            echo "E2E_TEST_MATRIX=$(echo '${{ inputs.e2e-test-matrix }}' | jq -c)" >> $GITHUB_OUTPUT
+          else
+            echo "E2E_TEST_MATRIX=$(echo '${{ needs.set-test-vars.outputs.e2e-test-matrix }}' | jq -c)" >> $GITHUB_OUTPUT
+          fi
 
   matrix_debug:
     runs-on: ubuntu-latest
@@ -124,11 +124,11 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.determine-matrix.outputs.e2e-test-matrix) }}
     steps:
-    - name: Check
-      env:
-        MATRIX: ${{ toJSON(matrix) }}
-      run: |
-        echo "MATRIX: $(jq -r -c '.' <<< "$MATRIX")"
+      - name: Check
+        env:
+          MATRIX: ${{ toJSON(matrix) }}
+        run: |
+          echo "MATRIX: $(jq -r -c '.' <<< "$MATRIX")"
 
   # Run the E2E tests in a matrix of regions and make targets looping through the array
   # If inputs.e2e-test-matrix is provided, then we will use that matrix instead of using the one targeting all regions and matching make targets
@@ -162,7 +162,7 @@ jobs:
   report-e2e-test-status:
     uses: defenseunicorns/delivery-github-actions-workflows/.github/workflows/report-status.yml@main
     needs: e2e-test
-    if: always()
+    if: ${{ always() && needs.e2e-test.result != 'skipped' }}
     secrets:
       APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
       APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
