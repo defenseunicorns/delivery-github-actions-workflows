@@ -43,6 +43,7 @@ runs:
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
     - name: Debug slash command args
+      shell: bash -e -o pipefail {0}
       run: |
         echo "Args Named: ${{ toJson(github.event.client_payload.slash_command.args.named) }}"
         echo "Contains 'make': ${{ contains(github.event.client_payload.slash_command.args.named, 'make') }}"
