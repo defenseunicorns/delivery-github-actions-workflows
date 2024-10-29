@@ -43,7 +43,7 @@ runs:
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
     - name: Debug slash command args
-      shell: bash -e -o pipefail {0}
+      shell: bash -ex -o pipefail {0}
       run: |
         echo "Args Named: ${{ toJson(github.event.client_payload.slash_command.args.named) }}"
         echo "Contains 'make': ${{ contains(toJson(github.event.client_payload.slash_command.args.named), 'make') }}"
@@ -52,3 +52,5 @@ runs:
         echo "Contains 'make' and 'region': ${{ contains(toJson(github.event.client_payload.slash_command.args.named), 'make') && contains(toJson(github.event.client_payload.slash_command.args.named), 'region') }}"
         # echo formatted string using make and region
         echo ${{ format('[{{"make-target":"{0}", "region":"{1}"}}]', github.event.client_payload.slash_command.args.named.make, github.event.client_payload.slash_command.args.named.region) }}
+        E2E_TEST_MATRIX=$(echo '${{ (contains(toJson(github.event.client_payload.slash_command.args.named), 'make') && contains(toJson(github.event.client_payload.slash_command.args.named, 'region')) && format('[{{"make-target":"{0}", "region":"{1}"}}]', github.event.client_payload.slash_command.args.named.make, github.event.client_payload.slash_command.args.named.region) || null }}')
+        echo "E2E_TEST_MATRIX: $E2E_TEST_MATRIX"
