@@ -52,5 +52,5 @@ runs:
         echo "Contains 'make' and 'region': ${{ contains(toJson(github.event.client_payload.slash_command.args.named), 'make') && contains(toJson(github.event.client_payload.slash_command.args.named), 'region') }}"
         # echo formatted string using make and region
         echo ${{ format('[{{"make-target":"{0}", "region":"{1}"}}]', github.event.client_payload.slash_command.args.named.make, github.event.client_payload.slash_command.args.named.region) }}
-        E2E_TEST_MATRIX=$(echo '${{ (contains(toJson(github.event.client_payload.slash_command.args.named), 'make') && contains(toJson(github.event.client_payload.slash_command.args.named, 'region')) && format('[{{"make-target":"{0}", "region":"{1}"}}]', github.event.client_payload.slash_command.args.named.make, github.event.client_payload.slash_command.args.named.region) || null }}')
+        E2E_TEST_MATRIX=$(echo '${{ (contains(toJson(github.event.client_payload.slash_command.args.named), 'make') && contains(toJson(github.event.client_payload.slash_command.args.named), 'region')) && format('[{{"make-target":"{0}", "region":"{1}"}}]', github.event.client_payload.slash_command.args.named.make, github.event.client_payload.slash_command.args.named.region) || null }}')
         echo "E2E_TEST_MATRIX: $E2E_TEST_MATRIX"
