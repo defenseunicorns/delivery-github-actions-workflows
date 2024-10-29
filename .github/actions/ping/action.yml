@@ -13,9 +13,6 @@ inputs:
   application_private_key:
     description: "The GitHub App private key"
     required: false
-  matrix_debug:
-    description: "DEBUG e2e matrix if provided"
-    required: false
 
 runs:
   using: composite
@@ -44,3 +41,9 @@ runs:
         GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }}
         GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
+
+    - name: Debug slash command args
+      run: |
+        echo "Args Named: ${{ toJson(github.event.client_payload.slash_command.args.named) }}"
+        echo "Contains 'make': ${{ contains(github.event.client_payload.slash_command.args.named, 'make') }}"
+        echo "'make' in Args Named: ${{ 'make' in github.event.client_payload.slash_command.args.named }}"
