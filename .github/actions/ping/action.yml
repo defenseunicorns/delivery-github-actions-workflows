@@ -5,13 +5,13 @@ description: Simple test that validates that an action can update a workflow sta
 inputs:
   # either pass in a token, or an app id and private key
   token:
-    description: 'The GitHub token to use for authentication'
+    description: "The GitHub token to use for authentication"
     required: false
   application_id:
-    description: 'The GitHub App ID'
+    description: "The GitHub App ID"
     required: false
   application_private_key:
-    description: 'The GitHub App private key'
+    description: "The GitHub App private key"
     required: false
 
 runs:
@@ -26,7 +26,7 @@ runs:
         application_private_key: ${{ inputs.application_private_key }}
 
     - name: debug
-      uses: hmarr/debug-action@v2
+      uses: hmarr/debug-action@v3
 
     # Update GitHub status for dispatch events
     - name: "Update GitHub Status for this ref"
