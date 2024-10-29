@@ -13,6 +13,9 @@ inputs:
   application_private_key:
     description: "The GitHub App private key"
     required: false
+  matrix_debug:
+    description: "DEBUG e2e matrix if provided"
+    required: false
 
 runs:
   using: composite
