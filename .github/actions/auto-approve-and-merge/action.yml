@@ -39,16 +39,13 @@ runs:
         github-token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
         review-message: "Auto approved"
 
-    - name: Wait commit status
-      uses: cloudposse/github-action-wait-commit-status@main
+    - name: Wait for status checks
+      uses: poseidon/wait-for-status-checks@v0.6.0
       with:
-        repository: ${{ github.repository }}
-        sha: ${{ github.sha }}
-        status: ${{ inputs.checks }}
-        expected_state: "success"
-        token: ${{ github.token }}
-        check-retry-count: 5
-        check-retry-interval: 60
+        token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
+        match_pattern: ${{ inputs.checks }}
+        timeout: 300s
+        interval: 15s
 
     - name: Auto Merge
       shell: bash -e -o pipefail {0}
