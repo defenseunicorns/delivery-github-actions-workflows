@@ -5,20 +5,20 @@ description: Auto approve and merge
 inputs:
   # either pass in a token, or an app id and private key
   token:
-    description: 'The GitHub token to use for authentication'
+    description: "The GitHub token to use for authentication"
     required: false
   application_id:
-    description: 'The GitHub App ID'
+    description: "The GitHub App ID"
     required: false
   application_private_key:
-    description: 'The GitHub App private key'
+    description: "The GitHub App private key"
     required: false
   branch:
-    description: 'The branch to merge into'
+    description: "The branch to merge into"
     required: false
-    default: 'main'
+    default: "main"
   checks:
-    description: 'The checks to wait for before merging'
+    description: "The checks to wait for before merging"
     required: false
     default: |-
       checks:
