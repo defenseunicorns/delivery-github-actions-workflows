@@ -20,10 +20,7 @@ inputs:
   checks:
     description: "The checks to wait for before merging"
     required: false
-    default: |-
-      checks:
-        - context: 'e2e-tests'
-        - context: 'pre-commit-checks'
+    default: "pre-commit-checks"
 
 runs:
   using: composite
@@ -42,16 +39,17 @@ runs:
         github-token: ${{ inputs.token || steps.get_installation_token.outputs.token }}
         review-message: "Auto approved"
 
-    - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team
-      uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
+    - name: Wait commit status
+      uses: cloudposse/github-action-wait-commit-status@main
       with:
-        application_id: ${{ inputs.application_id }}
-        application_private_key: ${{ inputs.application_private_key }}
-        token: ${{ inputs.token }}
-        branch: ${{ inputs.branch }}
-        checks: ${{ inputs.checks }}
-        require_code_owner_reviews: false
-        dismiss_stale_reviews: false
+        repository: ${{ github.repository }}
+        sha: ${{ github.sha }}
+        status: ${{ inputs.checks }}
+        lookup: "success"
+        token: ${{ github.token }}
+        check-timeout: 300
+        check-retry-count: 5
+        check-retry-interval: 60
 
     - name: Auto Merge
       shell: bash -e -o pipefail {0}
@@ -90,6 +88,29 @@ runs:
             -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD" \
             https://api.github.com/graphql
+
+    - name: Add to merge queue
+      shell: bash -e -o pipefail {0}
+      env:
+        GH_TOKEN: ${{ inputs.token || steps.get_installation_token.outputs.token }}
+        PR_ID: ${{ github.event.pull_request.node_id }}
+      run: |
+        gh api graphql \
+          -f pullRequestId=$PR_ID \
+          -f query='
+            mutation(
+              $pullRequestId: ID!
+            ) {
+              enqueuePullRequest(input: {
+                pullRequestId: $pullRequestId
+              }) {
+                clientMutationId mergeQueueEntry {
+                  position estimatedTimeToMerge pullRequest {
+                    title number
+                  }
+                }
+              }
+            }'
 
     - name: Check if PR has been added to the merge queue in a loop
       shell: bash -ex -o pipefail {0}
@@ -150,15 +171,3 @@ runs:
             # Wait for 10 seconds
             sleep 10
         done
-
-    - name: Workaround for GitHub Action not being able to do CODEOWNER approval or be a member of a team, turn branch protection settings back on
-      if: always()
-      uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
-      with:
-        application_id: ${{ inputs.application_id }}
-        application_private_key: ${{ inputs.application_private_key }}
-        token: ${{ inputs.token }}
-        branch: ${{ inputs.branch }}
-        checks: ${{ inputs.checks }}
-        require_code_owner_reviews: true
-        dismiss_stale_reviews: true
