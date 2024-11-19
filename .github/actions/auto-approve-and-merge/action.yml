@@ -85,85 +85,85 @@ runs:
             -d "$JSON_PAYLOAD" \
             https://api.github.com/graphql
 
-    - name: Add to merge queue
-      shell: bash -e -o pipefail {0}
-      env:
-        GH_TOKEN: ${{ inputs.token || steps.get_installation_token.outputs.token }}
-        PR_ID: ${{ github.event.pull_request.node_id }}
-      run: |
-        gh api graphql \
-          -f pullRequestId=$PR_ID \
-          -f query='
-            mutation(
-              $pullRequestId: ID!
-            ) {
-              enqueuePullRequest(input: {
-                pullRequestId: $pullRequestId
-              }) {
-                clientMutationId mergeQueueEntry {
-                  position estimatedTimeToMerge pullRequest {
-                    title number
-                  }
-                }
-              }
-            }'
+    # - name: Add to merge queue
+    #   shell: bash -e -o pipefail {0}
+    #   env:
+    #     GH_TOKEN: ${{ inputs.token || steps.get_installation_token.outputs.token }}
+    #     PR_ID: ${{ github.event.pull_request.node_id }}
+    #   run: |
+    #     gh api graphql \
+    #       -f pullRequestId=$PR_ID \
+    #       -f query='
+    #         mutation(
+    #           $pullRequestId: ID!
+    #         ) {
+    #           enqueuePullRequest(input: {
+    #             pullRequestId: $pullRequestId
+    #           }) {
+    #             clientMutationId mergeQueueEntry {
+    #               position estimatedTimeToMerge pullRequest {
+    #                 title number
+    #               }
+    #             }
+    #           }
+    #         }'
 
-    - name: Check if PR has been added to the merge queue in a loop
-      shell: bash -ex -o pipefail {0}
-      env:
-        GH_TOKEN: ${{ inputs.token || steps.get_installation_token.outputs.token }}
-      run: |
-        # GraphQL query as a string
-        GRAPHQL_QUERY=$(cat <<EOF
-        query(\$name:String!, \$owner:String!){
-          repository(name:\$name, owner:\$owner) {
-            mergeQueue(branch:"main") {
-              entries(first:5){
-                nodes{
-                  pullRequest{
-                    id
-                  }
-                }
-              }
-            }
-          }
-        }
-        EOF
-        )
+    # - name: Check if PR has been added to the merge queue in a loop
+    #   shell: bash -ex -o pipefail {0}
+    #   env:
+    #     GH_TOKEN: ${{ inputs.token || steps.get_installation_token.outputs.token }}
+    #   run: |
+    #     # GraphQL query as a string
+    #     GRAPHQL_QUERY=$(cat <<EOF
+    #     query(\$name:String!, \$owner:String!){
+    #       repository(name:\$name, owner:\$owner) {
+    #         mergeQueue(branch:"main") {
+    #           entries(first:5){
+    #             nodes{
+    #               pullRequest{
+    #                 id
+    #               }
+    #             }
+    #           }
+    #         }
+    #       }
+    #     }
+    #     EOF
+    #     )
 
-        # Variables to be used in the query
-        REPO_NAME="${{ github.event.repository.name  }}"
-        REPO_OWNER="${{ github.event.organization.login }}"
-        PR_NODE_ID="${{ github.event.pull_request.node_id }}"
+    #     # Variables to be used in the query
+    #     REPO_NAME="${{ github.event.repository.name  }}"
+    #     REPO_OWNER="${{ github.event.organization.login }}"
+    #     PR_NODE_ID="${{ github.event.pull_request.node_id }}"
 
-        # Use jq to create the JSON payload
-        JSON_PAYLOAD=$(jq -n \
-                            --arg name "$REPO_NAME" \
-                            --arg owner "$REPO_OWNER" \
-                            --arg query "$GRAPHQL_QUERY" \
-                            '{query: $query, variables: {name: $name, owner: $owner}}')
+    #     # Use jq to create the JSON payload
+    #     JSON_PAYLOAD=$(jq -n \
+    #                         --arg name "$REPO_NAME" \
+    #                         --arg owner "$REPO_OWNER" \
+    #                         --arg query "$GRAPHQL_QUERY" \
+    #                         '{query: $query, variables: {name: $name, owner: $owner}}')
 
-        # Loop until the specific PR ID is found
-        while true; do
+    #     # Loop until the specific PR ID is found
+    #     while true; do
 
-          # Use curl to send the GraphQL query
-          RESPONSE=$(curl -X POST \
-            --fail-with-body \
-            --oauth2-bearer "$(gh auth token)" \
-            -H "Content-Type: application/json" \
-            -d "$JSON_PAYLOAD" \
-            https://api.github.com/graphql)
+    #       # Use curl to send the GraphQL query
+    #       RESPONSE=$(curl -X POST \
+    #         --fail-with-body \
+    #         --oauth2-bearer "$(gh auth token)" \
+    #         -H "Content-Type: application/json" \
+    #         -d "$JSON_PAYLOAD" \
+    #         https://api.github.com/graphql)
 
-            echo $RESPONSE
+    #         echo $RESPONSE
 
-            # Check if the specific PR ID is in the response
-            if echo "$RESPONSE" | jq -e --arg prId "$PR_NODE_ID" '.data.repository.mergeQueue.entries.nodes[].pullRequest.id | contains($prId)' > /dev/null; then
-              echo "PR with ID $PR_NODE_ID is in the merge queue."
-              break
-            else
-              echo "PR with ID $PR_NODE_ID is not in the merge queue yet."
-            fi
+    #         # Check if the specific PR ID is in the response
+    #         if echo "$RESPONSE" | jq -e --arg prId "$PR_NODE_ID" '.data.repository.mergeQueue.entries.nodes[].pullRequest.id | contains($prId)' > /dev/null; then
+    #           echo "PR with ID $PR_NODE_ID is in the merge queue."
+    #           break
+    #         else
+    #           echo "PR with ID $PR_NODE_ID is not in the merge queue yet."
+    #         fi
 
-            # Wait for 10 seconds
-            sleep 10
-        done
+    #         # Wait for 10 seconds
+    #         sleep 10
+    #     done
