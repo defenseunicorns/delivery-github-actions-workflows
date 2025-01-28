@@ -48,7 +48,7 @@ runs:
   steps:
     - name: Get token
       id: get_installation_token
-      uses: peter-murray/workflow-application-token-action@8e4e6fbf6fcc8a272781d97597969d21b3812974 # v4
+      uses: peter-murray/workflow-application-token-action@d17e3a9a36850ea89f35db16c1067dd2b68ee343 # v4
       if: ${{ !inputs.token }}
       with:
         application_id: ${{ inputs.application_id }}
@@ -143,7 +143,7 @@ runs:
     - name: "Get token again"
       id: get_installation_token_again
       if: ${{ always() && inputs.send-status == 'true' && !inputs.token }}
-      uses: peter-murray/workflow-application-token-action@8e4e6fbf6fcc8a272781d97597969d21b3812974 # v4
+      uses: peter-murray/workflow-application-token-action@d17e3a9a36850ea89f35db16c1067dd2b68ee343 # v4
       with:
         application_id: ${{ inputs.application_id }}
         application_private_key: ${{ inputs.application_private_key }}
