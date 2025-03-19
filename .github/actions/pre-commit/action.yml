@@ -43,20 +43,20 @@ runs:
         ref: ${{ github.event.client_payload.pull_request.head.ref || github.ref }}
 
     - name: Init pre-commit cache
-      uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
       with:
         path: "${{ github.workspace }}/.cache/pre-commit"
         key: "${{inputs.check-type}}|${{hashFiles('.pre-commit-config.yaml')}}"
 
     - name: Init gopath cache
-      uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
       if: contains(inputs.check-type,'golang')
       with:
         path: "${{ github.workspace }}/.cache/go"
         key: "gopath|${{ inputs.golang_version }}|${{ hashFiles('go.sum') }}"
 
     - name: Init gobuild cache
-      uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
       if: contains(inputs.check-type,'golang')
       with:
         path: "${{ github.workspace }}/.cache/go-build"
@@ -64,7 +64,7 @@ runs:
 
     - name: Init docker cache
       id: init-docker-cache
-      uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
       with:
         path: "${{ github.workspace }}/.cache/docker"
         key: "docker|${{ inputs.buildharness_version }}"
