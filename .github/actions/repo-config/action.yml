@@ -55,7 +55,7 @@ runs:
 
     - name: Configure Repository settings
       id: configure-repository-settings
-      uses: octokit/request-action@v2.x
+      uses: octokit/request-action@b91aabaa861c777dcdb14e2387e30eddf04619ae # v3.0.0
       with:
         route: PATCH /repos/{owner}/{repo}
         owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
@@ -96,7 +96,7 @@ runs:
 
     - name: Configure Branch protection rules
       id: configure-branch-protection-rules
-      uses: octokit/request-action@v2.x
+      uses: octokit/request-action@b91aabaa861c777dcdb14e2387e30eddf04619ae # v3.0.0
       with:
         route: PUT /repos/{owner}/{repo}/branches/{branch}/protection
         owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
@@ -113,7 +113,7 @@ runs:
 
     - name: Configure Branch required_signatures on branch
       id: configure-branch-required-signatures
-      uses: octokit/request-action@v2.x
+      uses: octokit/request-action@b91aabaa861c777dcdb14e2387e30eddf04619ae # v3.0.0
       with:
         route: POST /repos/{owner}/{repo}/branches/{branch}/protection/required_signatures
         owner: ${{ github.event.client_payload.github.payload.repository.owner.login || github.repository_owner }}
