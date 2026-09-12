@@ -46,7 +46,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Repo Config
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/repo-config@8e153c3af9d2a368d974c8937554858284eb826d # main
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
