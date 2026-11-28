@@ -38,7 +38,7 @@ jobs:
         status-check: ${{ fromJSON(inputs.status-checks) }}
     steps:
       - name: Report status
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/report-status-context@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/report-status-context@8e153c3af9d2a368d974c8937554858284eb826d # main
         with:
           status-check: ${{ matrix.status-check }}
           status: ${{ inputs.status }}

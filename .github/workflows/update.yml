@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Parse Args
         id: parse
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/parse-update@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/parse-update@8e153c3af9d2a368d974c8937554858284eb826d # main
 
   # Update the comment that triggered the /test command to show the run url
   comment:
@@ -31,7 +31,7 @@ jobs:
     steps:
 
       - name: Update Comment
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/comment@8e153c3af9d2a368d974c8937554858284eb826d # main
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
@@ -46,7 +46,7 @@ jobs:
     steps:
 
       - name: Ping Test
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/ping@8e153c3af9d2a368d974c8937554858284eb826d # main
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
@@ -61,14 +61,14 @@ jobs:
     steps:
       - name: Get buildharness software versions
         id: buildharness-software-versions
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/get-buildharness-software-versions@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/get-buildharness-software-versions@8e153c3af9d2a368d974c8937554858284eb826d # main
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           token: ${{ secrets.TOKEN }}
 
       - name: Autoformat
-        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@main
+        uses: defenseunicorns/delivery-github-actions-workflows/.github/actions/autoformat@8e153c3af9d2a368d974c8937554858284eb826d # main
         with:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
