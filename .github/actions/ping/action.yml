@@ -19,7 +19,7 @@ runs:
   steps:
     - name: Get token
       id: get_installation_token
-      uses: peter-murray/workflow-application-token-action@d17e3a9a36850ea89f35db16c1067dd2b68ee343 # v4
+      uses: peter-murray/workflow-application-token-action@dad2b81e50ce3edeb5f3b7ffbd79f731368bd668 # v5
       if: ${{ !inputs.token }}
       with:
         application_id: ${{ inputs.application_id }}
